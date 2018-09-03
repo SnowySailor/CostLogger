@@ -3,6 +3,7 @@ package main
 import (
     "net/http"
     "database/sql"
+    "html/template"
 )
 
 type RequestContext struct {
@@ -28,7 +29,7 @@ type PageData struct {
     Title     string
     StyleSrc  []Link
     ScriptSrc []Link
-    Body      string
+    Body      template.HTML
 }
 
 type Link struct {

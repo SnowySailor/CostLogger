@@ -2,8 +2,6 @@ package main
 
 import (
     "fmt"
-    "html/template"
-    "bytes"
 )
 
 func (ctx RequestContext) notFoundPage(msg string) {
@@ -11,20 +9,9 @@ func (ctx RequestContext) notFoundPage(msg string) {
 }
 
 func (ctx RequestContext) successPage(msg string) {
-    t := template.Must(template.ParseFiles("../templates/page_wrapper.html"))
-    data := PageData {
-        Title:     "Temp Title",
-        StyleSrc:  []Link{},
-        ScriptSrc: []Link{},
-        Body:      msg,
-    }
-    var templateBytes bytes.Buffer
-    if err := t.Execute(&templateBytes, data); err != nil {
-        panic(err)
-    } else {
-        result := templateBytes.String()
-        ctx.writeResponse(result, 200, "text/html")
-    }
+    data   := makePageData("Temp Title", msg, []Link{}, []Link{})
+    result := makeHtmlWithTemplate(data, "../templates/page_wrapper.template")
+    ctx.writeResponse(result, 200, "text/html")
 }
 
 func (ctx RequestContext) successRaw(msg string) {
@@ -36,7 +23,9 @@ func (ctx RequestContext) successJson(msg string) {
 }
 
 func (ctx RequestContext) badRequestPage(msg string) {
-    ctx.writeResponse(makeBadRequestPage(msg), 400, "text/html")
+    data   := makePageData("Temp Title", msg, []Link{}, []Link{})
+    result := makeHtmlWithTemplate(data, "../templates/page_wrapper.template")
+    ctx.writeResponse(result, 400, "text/html")
 }
 
 func (ctx RequestContext) badRequestRaw(msg string) {

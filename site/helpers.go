@@ -4,7 +4,28 @@ import (
     "net/http"
     "net/url"
     "bytes"
+    "html/template"
 )
+
+func makeHtmlWithTemplate(pageData PageData, templateLocation string) string {
+    var templateBytes bytes.Buffer
+    t := template.Must(template.ParseFiles(templateLocation))
+
+    if err := t.Execute(&templateBytes, pageData); err != nil {
+        panic(err)
+    } else {
+        return templateBytes.String()
+    }
+}
+
+func makePageData(title string, body string, styleSrc []Link, scriptSrc []Link) PageData {
+    return PageData {
+        Title:     title,
+        Body:      template.HTML(body),
+        StyleSrc:  styleSrc,
+        ScriptSrc: scriptSrc,
+    }
+}
 
 func firstOrDefault(l []string) string {
     if len(l) == 0 {
@@ -13,7 +34,7 @@ func firstOrDefault(l []string) string {
     return l[0]
 }
 
-func filter(l []string, f func(string) bool) []string {
+func filterStrings(l []string, f func(string) bool) []string {
     rl := make([]string, 0)
     for _, v := range l {
         if f(v) {
@@ -60,7 +81,7 @@ func strListToStr(l []string) string {
 }
 
 func denullStrList(l []string) []string {
-    return filter(l, func(v string) bool {
+    return filterStrings(l, func(v string) bool {
         return v != ""
     })
 }

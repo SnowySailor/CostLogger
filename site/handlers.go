@@ -1,7 +1,7 @@
 package main
 
 func getHome(ctx RequestContext) {
-    ctx.successPage("Get home")
+    ctx.successPage("<h3>Get home</h3>")
 }
 
 func getSettings(ctx RequestContext) {
