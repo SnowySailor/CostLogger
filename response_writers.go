@@ -13,7 +13,7 @@ func (ctx RequestContext) successPage(msg string) {
 }
 
 func (ctx RequestContext) successRaw(msg string) {
-    ctx.writeResponse(msg, 200, "text/text")
+    ctx.writeResponse(msg, 200, "text/plain")
 }
 
 func (ctx RequestContext) successJson(msg string) {
@@ -25,11 +25,11 @@ func (ctx RequestContext) badRequestPage(msg string) {
 }
 
 func (ctx RequestContext) badRequestRaw(msg string) {
-    ctx.writeResponse(msg, 400, "text/text")
+    ctx.writeResponse(msg, 400, "text/plain")
 }
 
 func (ctx RequestContext) writeResponse(msg string, status int, contentType string) {
-    ctx.response.WriteHeader(status)
     ctx.response.Header().Set("Content-Type", contentType)
+    ctx.response.WriteHeader(status)
     fmt.Fprintf(ctx.response, msg)
 }
