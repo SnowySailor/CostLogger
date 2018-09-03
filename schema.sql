@@ -1,0 +1,18 @@
+CREATE TABLE USER (
+    Id       SERIAL,
+    Name     VARCHAR(100) NOT NULL,
+    Password VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE TRANSACTION (
+    Id             SERIAL,
+    Amount         DECIMAL NOT NULL,
+    Date           TIMESTAMP NOT NULL,
+    UserId         INT NOT NULL REFERENCES USER(Id),
+    LastUpdateTime TIMESTAMP NOT NULL
+);
+
+CREATE TABLE TRANSACTION_USER (
+    TransactionId INT NOT NULL REFERENCES TRANSACTION(Id),
+    UserId        INT NOT NULL REFERENCES USER(Id)
+);
