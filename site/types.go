@@ -23,3 +23,14 @@ type AppConfig struct {
         Database string `yaml:"database"`
     } `yaml:"databaseconfig"`
 }
+
+type PageData struct {
+    Title     string
+    StyleSrc  []Link
+    ScriptSrc []Link
+    Body      string
+}
+
+type Link struct {
+    Url string
+}
