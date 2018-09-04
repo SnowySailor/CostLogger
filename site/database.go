@@ -21,18 +21,19 @@ func getDatabaseConnection() (*sql.DB, error) {
     }
 }
 
-func validateDatabaseConfig(conf *AppConfig) string {
+func (conf *AppConfig) validateDatabaseConfig() []string {
     if conf.DatabaseConfig.Port == 0 {
         conf.DatabaseConfig.Port = 5432
     }
+    var err []string
     if conf.DatabaseConfig.Host == "" {
-        return "No database host provided in ./secrets.yaml"
+        err = append(err, "No database host provided")
     }
     if conf.DatabaseConfig.Username == "" {
-        return "No database user provided in ./secrets.yaml"
+        err = append(err, "No database user provided")
     }
     if conf.DatabaseConfig.Database == "" {
-        return "No database provided in ./secrets.yaml"
+        err = append(err, "No database provided")
     }
-    return ""
+    return err
 }

@@ -4,8 +4,13 @@ import (
     "net/http"
     "database/sql"
     "html/template"
+    "github.com/go-redis/redis"
 )
 
+// Type alias for redis so that I can define methods on the redis.Client type
+type Redis redis.Client
+
+// Request context
 type RequestContext struct {
     request   *http.Request
     response  http.ResponseWriter
@@ -15,6 +20,7 @@ type RequestContext struct {
     database  *sql.DB
 }
 
+// Configuration
 type AppConfig struct {
     DatabaseConfig struct {
         Host     string `yaml:"host"`
@@ -23,8 +29,15 @@ type AppConfig struct {
         Password string `yaml:"password"`
         Database string `yaml:"database"`
     } `yaml:"databaseconfig"`
+    RedisConfig struct {
+        Host     string `yaml:"host"`
+        Port     int    `yaml:"port"`
+        Password string `yaml:"password"`
+        Database int    `yaml:"database"`
+    }
 }
 
+// Types for rendering pages with templates
 type PageData struct {
     Title     string
     StyleSrc  []Link

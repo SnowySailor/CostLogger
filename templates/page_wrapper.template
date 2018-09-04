@@ -2,12 +2,12 @@
 <html>
     <head>
         <title>{{.Title}}</title>
-        {{range .ScriptSrc}}
-            <style src="{{.Url}}"></style>
-        {{end}}
-        {{range .StyleSrc}}
-            <script src="{{.Url}}"></script>
-        {{end}}
+    {{range .ScriptSrc}}
+        <style src="{{.Url}}"></style>
+    {{end}}
+    {{range .StyleSrc}}
+        <script src="{{.Url}}"></script>
+    {{end}}
     </head>
     <body>
         {{.Body}}
