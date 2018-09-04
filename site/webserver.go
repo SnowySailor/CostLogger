@@ -10,13 +10,17 @@ import (
     "log"
     "net/http"
     "fmt"
+    "github.com/gorilla/context"
+    "github.com/gorilla/sessions"
 )
 
 var config AppConfig
+var store *sessions.CookieStore
 
 func main() {
-    config.getAppConfig()
+    config.populateAppConfig()
+    store  = sessions.NewCookieStore([]byte(config.SessionConfig.SessionSecretKey))
     http.HandleFunc("/", routeRequest)
     fmt.Println("Listening on " + "localhost" + ":8080")
-    log.Fatal(http.ListenAndServe(":8080", nil))
+    log.Fatal(http.ListenAndServe(":8080", context.ClearHandler(http.DefaultServeMux)))
 }

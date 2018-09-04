@@ -49,12 +49,18 @@ func routeRequest(resp http.ResponseWriter, req *http.Request) {
 }
 
 func establishRequestContext(req *http.Request, resp http.ResponseWriter) RequestContext {
+    session, err := store.Get(req, config.SessionConfig.SessionName)
+    if err != nil {
+        panic(err)
+    }
+
     ctx := RequestContext {
         request  : req,
         response : resp,
         method   : req.Method,
         userId   : 0,
         routes   : getPathRoutes(req.URL.String()),
+        session  : session,
     }
     return ctx
 }

@@ -5,6 +5,7 @@ import (
     "database/sql"
     "html/template"
     "github.com/go-redis/redis"
+    "github.com/gorilla/sessions"
 )
 
 // Type alias for redis so that I can define methods on the redis.Client type
@@ -18,6 +19,7 @@ type RequestContext struct {
     userId    int
     routes    []string
     database  *sql.DB
+    session   *sessions.Session
 }
 
 // Configuration
@@ -34,6 +36,10 @@ type AppConfig struct {
         Port     int    `yaml:"port"`
         Password string `yaml:"password"`
         Database int    `yaml:"database"`
+    }
+    SessionConfig struct {
+        SessionSecretKey string `yaml:"sessionsecretkey"`
+        SessionName      string `yaml:"sessionname"`
     }
 }
 

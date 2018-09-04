@@ -6,7 +6,7 @@ import (
     "fmt"
 )
 
-func (conf *AppConfig) getAppConfig() {
+func (conf *AppConfig) populateAppConfig() {
     if file, err := ioutil.ReadFile("../secrets.yaml"); err != nil {
         panic(fmt.Sprintf("Error reading config: %v\n", err))
     } else {
