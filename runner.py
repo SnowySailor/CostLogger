@@ -9,7 +9,6 @@ from watchdog.events import PatternMatchingEventHandler
 class MyHandler(PatternMatchingEventHandler):
     patterns           = ["*.go", "*.template", "*.yaml"]
     current_process    = None
-    current_process_id = 0
 
     def process(self, event):
         print(event.src_path + " was " + event.event_type)
