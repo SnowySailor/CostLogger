@@ -1,0 +1,3 @@
+cd site
+go build
+
