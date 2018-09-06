@@ -21,6 +21,34 @@ func (conf *AppConfig) populateAppConfig() {
     }
 }
 
+func (conf *AppConfig) validateDatabaseConfig() []string {
+    if conf.DatabaseConfig.Port == 0 {
+        conf.DatabaseConfig.Port = 5432
+    }
+    var err []string
+    if conf.DatabaseConfig.Host == "" {
+        err = append(err, "No database host provided")
+    }
+    if conf.DatabaseConfig.Username == "" {
+        err = append(err, "No database user provided")
+    }
+    if conf.DatabaseConfig.Database == "" {
+        err = append(err, "No database provided")
+    }
+    return err
+}
+
+func (conf *AppConfig) validateRedisConfig() []string {
+    if conf.RedisConfig.Port == 0 {
+        conf.RedisConfig.Port = 6379
+    }
+    var err []string
+    if conf.RedisConfig.Host == "" {
+        err = append(err, "No Redis host provided")
+    }
+    return err
+}
+
 func stringJoin(strings []string, delimiter string) string {
     res := ""
     last := len(strings) - 1

@@ -8,18 +8,20 @@ import (
     "github.com/gorilla/sessions"
 )
 
-// Type alias for redis so that I can define methods on the redis.Client type
+// Type alias so methods can be defined on non-local types
 type Redis redis.Client
+type Session sessions.Session
 
 // Request context
 type RequestContext struct {
-    request   *http.Request
-    response  http.ResponseWriter
-    method    string
-    userId    int
-    routes    []string
-    database  *sql.DB
-    session   *sessions.Session
+    request    *http.Request
+    response   http.ResponseWriter
+    method     string
+    userId     int
+    routes     []string
+    database   *sql.DB
+    session    *sessions.Session
+    redis      *redis.Client
 }
 
 // Configuration
@@ -40,6 +42,9 @@ type AppConfig struct {
     SessionConfig struct {
         SessionSecretKey string `yaml:"sessionsecretkey"`
         SessionName      string `yaml:"sessionname"`
+    }
+    WebConfig struct {
+        MaxUploadSize int64 `yaml:"maxuploadsize"`
     }
 }
 

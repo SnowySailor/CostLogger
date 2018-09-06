@@ -1,7 +1,16 @@
 package main
 
+import ("fmt")
+
 func getHome(ctx RequestContext) {
-    ctx.successPage("<h3>Get home</h3>")
+    val, ok := ctx.getSessionInt("times")
+    if ok {
+        ctx.setSession("times", val + 1)
+    } else {
+        ctx.setSession("times", 1)
+    }
+    val = val + 1
+    ctx.successPage("<h3>Get home: " + fmt.Sprintf("%v", val) + "</h3>")
 }
 
 func getSettings(ctx RequestContext) {

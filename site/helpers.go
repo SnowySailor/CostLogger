@@ -5,7 +5,42 @@ import (
     "net/url"
     "bytes"
     "html/template"
+    "strings"
 )
+
+func splitPathRoutes(path string) []string {
+    return denullStrList(strings.Split(path, "/"))
+}
+
+func getPathRoutes(path string) []string {
+    routes := splitPathRoutes(path)
+    if len(routes) == 0 {
+        return routes
+    }
+    // Split the query from the last route
+    lastRoute := getLastPathRoute(path)
+    // "replace" the last route in `routes` with the new lastRoute
+    return append(routes[:len(routes)-1], lastRoute)
+}
+
+func getLastPathRoute(path string) string {
+    // Get all routes
+    routes := splitPathRoutes(path)
+    if len(routes) == 0 {
+        // If there were no routes returned, return empty string
+        return ""
+    }
+    // Get the last route and the location of the beginning of the url query
+    lastRoute := routes[len(routes)-1]
+    queryIndex   := strings.Index(lastRoute, "?")
+    if queryIndex == -1 {
+        // If there is no query, we don't have to go further. Just return the last route.
+        return lastRoute
+    }
+    // Return the last route without the query
+    return lastRoute[:queryIndex]
+}
+
 
 func makeHtmlWithTemplate(pageData PageData, templateLocation string) string {
     var templateBytes bytes.Buffer

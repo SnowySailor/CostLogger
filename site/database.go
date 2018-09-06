@@ -20,20 +20,3 @@ func getDatabaseConnection() (*sql.DB, error) {
         }
     }
 }
-
-func (conf *AppConfig) validateDatabaseConfig() []string {
-    if conf.DatabaseConfig.Port == 0 {
-        conf.DatabaseConfig.Port = 5432
-    }
-    var err []string
-    if conf.DatabaseConfig.Host == "" {
-        err = append(err, "No database host provided")
-    }
-    if conf.DatabaseConfig.Username == "" {
-        err = append(err, "No database user provided")
-    }
-    if conf.DatabaseConfig.Database == "" {
-        err = append(err, "No database provided")
-    }
-    return err
-}

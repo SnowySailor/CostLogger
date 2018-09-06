@@ -14,17 +14,6 @@ func getRedisConnection() *redis.Client {
     return client
 }
 
-func (conf *AppConfig) validateRedisConfig() []string {
-    if conf.RedisConfig.Port == 0 {
-        conf.RedisConfig.Port = 6379
-    }
-    var err []string
-    if conf.RedisConfig.Host == "" {
-        err = append(err, "No Redis host provided")
-    }
-    return err
-}
-
 func (client *Redis) getRedis(key string) string {
     if val, err := client.Get(key).Result(); err != nil {
         panic(err)
