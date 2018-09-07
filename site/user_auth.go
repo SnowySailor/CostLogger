@@ -19,10 +19,10 @@ func (ctx *RequestContext) attemptUserLogin() (string, bool) {
     providedPasswordBytes := []byte(providedPassword)
 
     // Try to get the user by their username or email
-    user, ok := ctx.getUserBy("username", providedUsername)
-    if !ok {
-        user, ok = ctx.getUserBy("email", providedUsername)
-        if !ok {
+    user, err := ctx.getUserBy("username", providedUsername)
+    if err != nil {
+        user, err = ctx.getUserBy("email", providedUsername)
+        if err != nil {
             return _invalid, false
         }
     }
@@ -42,9 +42,4 @@ func (ctx *RequestContext) attemptUserLogin() (string, bool) {
 
 func (ctx *RequestContext) setSessionUserId(userId int) {
     ctx.setSession("UserId", userId)
-}
-
-func (ctx *RequestContext) getUserBy(field string, value string) (User, bool) {
-    var user User
-    return user, false
 }

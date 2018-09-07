@@ -3,14 +3,25 @@ package main
 import ("fmt")
 
 func getHome(ctx RequestContext) {
-    val, ok := ctx.getSessionInt("times")
-    if ok {
-        ctx.setSession("times", val + 1)
+    user, err := ctx.getUserBy("username", "usera")
+    output := ""
+    if err == nil {
+        output = fmt.Sprintf("Got user %v", user)
     } else {
-        ctx.setSession("times", 1)
+        output = "No user"
     }
-    val = val + 1
-    ctx.successPage("<h3>Get home: " + fmt.Sprintf("%v", val) + "</h3>")
+    user = User {
+        Username: "usera",
+        DisplayName: "usera123",
+        Email: "Hello@user.com",
+    }
+    userId, err := ctx.insertUser(user)
+    if err != nil {
+        panic(err)
+    } else {
+        output = output + fmt.Sprintf(", new user %v", userId)
+    }
+    ctx.successPage("<h3>Get home: " + output + "</h3>")
 }
 
 func getSettings(ctx RequestContext) {

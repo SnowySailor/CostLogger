@@ -6,7 +6,25 @@ import (
     "bytes"
     "html/template"
     "strings"
+    "errors"
 )
+
+func makeError(msg string) error {
+    return errors.New(msg)
+}
+
+func strToLower(value string) string {
+    return strings.ToLower(value)
+}
+
+func strInList(value string, list []string) bool {
+    for i := 0; i < len(list); i = i+1 {
+        if value == list[i] {
+            return true
+        }
+    }
+    return false
+}
 
 func splitPathRoutes(path string) []string {
     return denullStrList(strings.Split(path, "/"))
