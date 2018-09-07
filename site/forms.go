@@ -1,17 +1,10 @@
 package main
 
 func (ctx *RequestContext) getFormValue(name string) (string, bool) {
-    if val, ok := ctx.FormValueMulti(name); ok {
+    if val, ok := ctx.getFormValueMulti(name); ok {
         if len(val) > 0 {
             return val[0], true
         }
-        return "", true
-    }
-    if val, ok := ctx.PostFormValueMulti(name); ok {
-        if len(val) > 0 {
-            return val[0], true
-        }
-        return "", true
     }
     return "", false
 }

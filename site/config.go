@@ -21,6 +21,13 @@ func (conf *AppConfig) populateAppConfig() {
     }
 }
 
+func (conf *AppConfig) validateWebConfig() []string {
+    if conf.WebConfig.MaxUploadSize == 0 {
+        conf.WebConfig.MaxUploadSize = 32 << 20
+    }
+    return make([]string, 0)
+}
+
 func (conf *AppConfig) validateDatabaseConfig() []string {
     if conf.DatabaseConfig.Port == 0 {
         conf.DatabaseConfig.Port = 5432

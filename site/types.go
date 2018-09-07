@@ -59,3 +59,12 @@ type PageData struct {
 type Link struct {
     Url string
 }
+
+// Application data types
+type User struct {
+    Id           int
+    Username     string
+    DisplayName  string
+    Email        string
+    PasswordHash string
+}
