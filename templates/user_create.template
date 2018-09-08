@@ -1,0 +1,8 @@
+<form method="POST" action="createuser">
+    <input type="text" name="username" placeholder="Username"/>
+    <input type="text" name="email" placeholder="Email"/>
+    <input type="text" name="displayName" placeholder="Display name"/>
+    <input type="password" name="password" placeholder="Password"/>
+    <input type="password" name="passwordVerify" placeholder="Verify password"/>
+    <input type="Submit"/>
+</form>

@@ -20,6 +20,8 @@ func routeRequest(resp http.ResponseWriter, req *http.Request) {
             getTransaction(ctx)
         } else if mainRoute == "feed" {
             getFeed(ctx)
+        } else if mainRoute == "createuser" {
+            getCreateUser(ctx)
         } else {
             ctx.notFoundPage("Invalid route")
         }
@@ -30,6 +32,8 @@ func routeRequest(resp http.ResponseWriter, req *http.Request) {
             postSettings(ctx)
         } else if mainRoute == "login" {
             postLogin(ctx)
+        } else if mainRoute == "createuser" {
+            postCreateUser(ctx)
         } else {
             ctx.notFoundPage("Invalid route")
         }

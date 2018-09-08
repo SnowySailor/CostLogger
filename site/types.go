@@ -6,6 +6,7 @@ import (
     "html/template"
     "github.com/go-redis/redis"
     "github.com/gorilla/sessions"
+    "time"
 )
 
 // Type alias so methods can be defined on non-local types
@@ -67,4 +68,19 @@ type User struct {
     DisplayName  string
     Email        string
     PasswordHash string
+}
+
+type Transaction struct {
+    Id              int
+    Amount          int // Example: 5049 = $50.49
+    CreateDate      time.Time
+    UserId          int
+    InvolvedUsers   []TransactionUser
+    LastUpdateTime  time.Time
+}
+
+type TransactionUser struct {
+    UserId             int
+    TransactionId      int
+    PercentInvolvement int // Example: 5049 = 50.49%
 }

@@ -60,7 +60,7 @@ func getLastPathRoute(path string) string {
 }
 
 
-func makeHtmlWithTemplate(pageData PageData, templateLocation string) string {
+func makeHtmlWithTemplate(templateLocation string, pageData PageData) string {
     var templateBytes bytes.Buffer
     t := template.Must(template.ParseFiles(templateLocation))
 

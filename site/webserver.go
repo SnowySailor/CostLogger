@@ -14,12 +14,9 @@ import (
     "github.com/gorilla/sessions"
 )
 
-var config AppConfig
-var store *sessions.CookieStore
-
 func main() {
     config.populateAppConfig()
-    store  = sessions.NewCookieStore([]byte(config.SessionConfig.SessionSecretKey))
+    store = sessions.NewCookieStore([]byte(config.SessionConfig.SessionSecretKey))
     http.HandleFunc("/", routeRequest)
     fmt.Println("Listening on " + "localhost" + ":8080")
     log.Fatal(http.ListenAndServe(":8080", context.ClearHandler(http.DefaultServeMux)))

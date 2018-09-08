@@ -8,9 +8,8 @@ func (ctx RequestContext) notFoundPage(msg string) {
     ctx.writeResponse(msg, 404, "text/html")
 }
 
-func (ctx RequestContext) successPage(msg string) {
-    data   := makePageData("Temp Title", msg, []Link{}, []Link{})
-    result := makeHtmlWithTemplate(data, "../templates/page_wrapper.template")
+func (ctx RequestContext) successPage(data PageData) {
+    result := makeHtmlWithTemplate("../templates/page_wrapper.template", data)
     ctx.writeResponse(result, 200, "text/html")
 }
 
@@ -22,9 +21,8 @@ func (ctx RequestContext) successJson(msg string) {
     ctx.writeResponse(msg, 200, "application/json")
 }
 
-func (ctx RequestContext) badRequestPage(msg string) {
-    data   := makePageData("Temp Title", msg, []Link{}, []Link{})
-    result := makeHtmlWithTemplate(data, "../templates/page_wrapper.template")
+func (ctx RequestContext) badRequestPage(data PageData) {
+    result := makeHtmlWithTemplate("../templates/page_wrapper.template", data)
     ctx.writeResponse(result, 400, "text/html")
 }
 

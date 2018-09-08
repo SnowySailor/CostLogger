@@ -21,6 +21,15 @@ func getDatabaseConnection() (*sql.DB, error) {
     }
 }
 
+// USER QUERIES
+// //////////////////////////////////////////////////////////////
+
+// Get a single user by their id
+func (ctx *RequestContext) getUser(id int) (User, error) {
+    return ctx.getUserBy("id", id)
+}
+
+// Get a single user by a provided field as long as the field is supported
 func (ctx *RequestContext) getUserBy(field string, value interface{}) (User, error) {
     var user User
     allowedFields := []string{"id", "username", "display_name", "email"}
@@ -30,17 +39,13 @@ func (ctx *RequestContext) getUserBy(field string, value interface{}) (User, err
 
     // Query
     query := fmt.Sprintf("select id, username, display_name, email, password_hash from app_user where %s = $1", field)
-
     row   := ctx.database.QueryRow(query, value)
     err   := row.Scan(&user.Id, &user.Username, &user.DisplayName, &user.Email, &user.PasswordHash)
 
-    if err != nil {
-        return user, err
-    } else {
-        return user, err
-    }
+    return user, err
 }
 
+// Insert a new user into the database
 func (ctx *RequestContext) insertUser(user User) (int, error) {
     var userId int
     // Query
@@ -50,3 +55,96 @@ func (ctx *RequestContext) insertUser(user User) (int, error) {
 
     return userId, err
 }
+
+// //////////////////////////////////////////////////////////////
+
+
+// TRANSACTION QUERIES
+// //////////////////////////////////////////////////////////////
+
+// Get a single transaction
+func (ctx *RequestContext) getTransaction(transactionId int) (Transaction, error) {
+    var transaction Transaction
+    // Query
+    query := "select id, amount, createdate, userid, lastupdatetime from transaction where id = $1"
+    row   := ctx.database.QueryRow(query, transactionId)
+    err   := row.Scan(&transaction.Id, &transaction.Amount, &transaction.CreateDate, &transaction.UserId, &transaction.LastUpdateTime)
+
+    if err != nil {
+        return transaction, err
+    }
+
+    involvedUsers, err        := ctx.getTransactionUsers(transactionId)
+    transaction.InvolvedUsers = involvedUsers
+
+    return transaction, err
+}
+
+// Insert a new transaction into the database
+func (ctx *RequestContext) insertTransaction(transaction Transaction) (int, error) {
+    var transactionId int
+
+    // Begin transaction
+    tx, err := ctx.database.Begin()
+    if err != nil {
+        return transactionId, err
+    }
+
+    // Insert main transaction
+    query   := "insert into transaction (amount, user_id) values ($1, $2) returning id"
+    row     := ctx.database.QueryRow(query, transaction.Amount, transaction.UserId)
+    err     = row.Scan(&transactionId)
+
+    // Insert all involved users
+    for i := 0; i < len(transaction.InvolvedUsers); i = i+1 {
+        err = ctx.insertTransactionUser(transaction.InvolvedUsers[i])
+        if err != nil {
+            err = tx.Rollback()
+            if err != nil {
+                panic(err)
+            }
+            return transactionId, err
+        }
+    }
+
+    // Commit transaction
+    err = tx.Commit()
+    if err != nil {
+        panic(err)
+    }
+
+    return transactionId, err
+}
+
+// Get the users that are involved in a transaction
+func (ctx *RequestContext) getTransactionUsers(transactionId int) ([]TransactionUser, error) {
+    users     := make([]TransactionUser, 0)
+    query     := "select user_id, transaction_id, percentage from transaction_user where transaction_id = $1"
+    rows, err := ctx.database.Query(query, transactionId)
+    if err != nil {
+        return users, err
+    }
+    defer rows.Close()
+    for rows.Next() {
+        var transactionUser TransactionUser
+        err = rows.Scan(&transactionUser.UserId, transactionUser.PercentInvolvement)
+        if err != nil {
+            return users, err
+        }
+        users = append(users, transactionUser)
+    }
+    err = rows.Err()
+    if err != nil {
+        return users, err
+    }
+    return users, nil
+}
+
+// Insert all the users that are involved in a transaction
+func (ctx *RequestContext) insertTransactionUser(user TransactionUser) error {
+    query   := "insert into transaction_user (user_id, transaction_id, percentage) values ($1, $2, $3)"
+    _, err := ctx.database.Exec(query, user.UserId, user.TransactionId, user.PercentInvolvement)
+    return err
+}
+
+// //////////////////////////////////////////////////////////////

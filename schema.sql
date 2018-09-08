@@ -23,16 +23,16 @@ CREATE TABLE APP_USER (
 );
 
 CREATE TABLE TRANSACTION (
-    Id             SERIAL PRIMARY KEY,
-    Amount         DECIMAL   NOT NULL,
-    Date           TIMESTAMP NOT NULL,
-    UserId         INT       NOT NULL REFERENCES APP_USER(Id),
-    LastUpdateTime TIMESTAMP NOT NULL
+    Id               SERIAL    PRIMARY KEY,
+    Amount           INT       NOT NULL,
+    Create_Date      TIMESTAMP NOT NULL,
+    UserId           INT       NOT NULL REFERENCES APP_USER(Id),
+    Last_Update_Time TIMESTAMP NOT NULL
 );
 
 CREATE TABLE TRANSACTION_USER (
-    TransactionId INT NOT NULL REFERENCES TRANSACTION(Id),
-    UserId        INT NOT NULL REFERENCES APP_USER(Id),
-    Percentage    DECIMAL NOT NULL,
+    Transaction_Id INT NOT NULL REFERENCES TRANSACTION(Id),
+    User_Id        INT NOT NULL REFERENCES APP_USER(Id),
+    Percentage     INT NOT NULL,
     PRIMARY KEY (TransactionId, UserId)
 );
