@@ -29,7 +29,7 @@ func getFeed(ctx RequestContext) {
 func getRegisterUser(ctx RequestContext) {
     var pageData PageData
     inputForm := makeHtmlWithTemplate("../templates/user_create.template", pageData)
-    pageData   = makePageData("Register", inputForm, []Link{{Url:"/static/styles/global.css"}}, make([]Link, 0))
+    pageData   = makePageData("Register", inputForm, []Link{{Url:"/static/styles/global.css"}}, []Link{{Url:"/static/scripts/global.js"}})
     ctx.successPage(pageData)
 }
 
@@ -42,7 +42,13 @@ func postSettings(ctx RequestContext) {
 }
 
 func postLogin(ctx RequestContext) {
-    ctx.successRaw("Post login")
+    msg, succ := ctx.attemptUserLogin()
+    response  := makeJSONResponse(msg)
+    if !succ {
+        ctx.badRequestJSON(response)
+    } else {
+        ctx.successJSON(response)
+    }
 }
 
 func postRegisterUser(ctx RequestContext) {

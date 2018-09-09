@@ -8,6 +8,7 @@ import (
     "strings"
     "errors"
     "golang.org/x/crypto/bcrypt"
+    "encoding/json"
 )
 
 // Takes a string (URL) and removes the leading slash if it exists
@@ -38,6 +39,20 @@ func hashPassword(provided string) string {
         panic(err)
     }
     return string(hashedBytes[:])
+}
+
+func marshalJSON(inter interface{}) (string, error) {
+    bytes, err := json.Marshal(inter)
+    if err != nil {
+        return "", err
+    }
+    return string(bytes), nil
+}
+
+func makeJSONResponse(msg string) JSONResponse {
+    return JSONResponse {
+        Message: msg,
+    }
 }
 
 func makeError(msg string) error {

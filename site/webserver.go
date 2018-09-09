@@ -16,7 +16,11 @@ import (
 
 func main() {
     config.populateAppConfig()
-    store = sessions.NewCookieStore([]byte(config.SessionConfig.SessionSecretKey))
+    store = sessions.NewCookieStore([]byte(config.SessionConfig.SecretKey))
+    store.Options = &sessions.Options{
+        MaxAge:   config.SessionConfig.MaxAge,
+        HttpOnly: config.SessionConfig.internHttpOnly,
+    }
     http.HandleFunc("/", routeRequest)
     fmt.Println("Listening on " + "localhost" + ":8080")
     log.Fatal(http.ListenAndServe(":8080", context.ClearHandler(http.DefaultServeMux)))

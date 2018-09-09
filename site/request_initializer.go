@@ -6,7 +6,7 @@ import (
 )
 
 func establishRequestContext(req *http.Request, resp http.ResponseWriter) RequestContext {
-    session, err := store.Get(req, config.SessionConfig.SessionName)
+    session, err := store.Get(req, config.SessionConfig.Name)
     if err != nil {
         panic(err)
     }

@@ -1,5 +1,5 @@
 <style>
-    input[type='text'],input[type='password'] {
+    input[type='text'], input[type='password'] {
         padding-left:5px;
         padding-right:5px;
         height:25px;
@@ -13,21 +13,30 @@
         height:25px;
         border:1px solid gray;
         border-radius:3px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
     }
     #registerformwrapper {
         width:300px;
-        height:200px;
     }
 </style>
+<script type="text/javascript"/>
+    function registerFormSubmitCallback(text) {
+        console.log(text);
+    }
+</script>
 <div class="flex-container">
     <div id="registerformwrapper" class="formwrapper">
+        <div class="centertext headertext">Register</div>
         <form id="registerform" class="width100 height100" method="POST" action="register">
-            <input class="width100" type="text" name="username" placeholder="Username"/>
-            <input class="width100" type="text" name="email" placeholder="Email"/>
-            <input class="width100" type="text" name="displayName" placeholder="Display name"/>
-            <input class="width100" type="password" name="password" placeholder="Password"/>
-            <input class="width100" type="password" name="passwordVerify" placeholder="Verify password"/>
-            <input id="registerformsubmit" type="Submit" value="Submit"/>
+            <input required class="width100" type="text" name="username" placeholder="Username"/>
+            <input required class="width100" type="text" name="email" placeholder="Email"/>
+            <input required class="width100" type="text" name="displayName" placeholder="Display name"/>
+            <input required class="width100" type="password" name="password" placeholder="Password"/>
+            <input required class="width100" type="password" name="passwordVerify" placeholder="Verify password"/>
+            <input id="registerformsubmit" type="button" onclick="onclickFormSubmit('registerform', registerFormSubmitCallback);" value="Submit"/>
         </form>
+        <div class="errormsg" id="errormsg"></div>
     </div>
 </div>

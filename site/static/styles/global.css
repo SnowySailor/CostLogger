@@ -1,6 +1,7 @@
 html,body{margin:0;padding:0;height:100%;width:100%;}
 body{background-color:#f9f9f9;}
 input{box-sizing:border-box;}
+input[type='button']{cursor:pointer;}
 .flex-container {
     height: 100%;
     padding: 0;
@@ -20,6 +21,21 @@ input{box-sizing:border-box;}
     border-radius:3px
 }
 
-.centered{margin:50%;top:50%;position:relative;}
+.headertext {
+    font-family: Trebuchet MS;
+    font-size:125%;
+    padding-bottom:10px;
+}
+
+.errormsg {
+    min-height:50px;
+    width:100%;
+    padding: 10px;
+    text-align: center;
+    box-sizing: border-box;
+    color: #c00;
+}
+.hidden{display:none;}
+.centertext{text-align:center;}
 .width100{width:100%;}
 .height100{height:100%;}

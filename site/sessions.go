@@ -38,3 +38,9 @@ func (ctx *RequestContext) setSession(key string, val interface{}) {
     sess.Values[key] = val
     sess.Save(ctx.request, ctx.response)
 }
+
+func (ctx *RequestContext) removeSession(key string) {
+    sess := ctx.session
+    delete(sess.Values, key)
+    sess.Save(ctx.request, ctx.response)
+}

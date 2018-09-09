@@ -3,7 +3,10 @@ package main
 import (
     "gopkg.in/yaml.v2"
     "io/ioutil"
+    "io"
     "fmt"
+    "crypto/rand"
+    "encoding/base64"
 )
 
 func (conf *AppConfig) populateAppConfig() {
@@ -15,6 +18,7 @@ func (conf *AppConfig) populateAppConfig() {
         }
         err := conf.validateDatabaseConfig()
         err = append(err, conf.validateRedisConfig()...)
+        err = append(err, conf.validateSessionConfig()...)
         if len(err) > 0 {
             panic(stringJoin(err, ", ") + " in secrets.yaml")
         }
@@ -57,6 +61,27 @@ func (conf *AppConfig) validateRedisConfig() []string {
     if conf.RedisConfig.Host == "" {
         errors = append(errors, "No Redis host provided")
     }
+    return errors
+}
+
+func (conf *AppConfig) validateSessionConfig() []string {
+    var errors []string
+    if conf.SessionConfig.Name == "" {
+        conf.SessionConfig.Name = "sessionid"
+    }
+    if conf.SessionConfig.SecretKey == "" {
+        randBytes := make([]byte, 256)
+        _, err := io.ReadFull(rand.Reader, randBytes)
+        if err != nil {
+            errors = append(errors, err.Error())
+        } else {
+            conf.SessionConfig.SecretKey = base64.StdEncoding.EncodeToString(randBytes)
+        }
+    }
+    if conf.SessionConfig.MaxAge == 0 {
+        conf.SessionConfig.MaxAge = 3600
+    }
+    conf.SessionConfig.internHttpOnly = strToLower(conf.SessionConfig.HttpOnly) != "off"
     return errors
 }
 

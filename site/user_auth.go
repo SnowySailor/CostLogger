@@ -33,6 +33,15 @@ func (ctx *RequestContext) attemptUserLogin() (string, bool) {
     }
 }
 
+func (ctx *RequestContext) logoutUser() {
+    userId := ctx.getUserId()
+    if userId <= 0 {
+        // User was never logged in
+        return
+    }
+    ctx.removeSession("UserId")
+}
+
 func (ctx *RequestContext) setSessionUserId(userId int) {
     ctx.setSession("UserId", userId)
 }

@@ -25,6 +25,10 @@ type RequestContext struct {
     redis      *redis.Client
 }
 
+type JSONResponse struct {
+    Message string `json:"Message"`
+}
+
 // Configuration
 type AppConfig struct {
     DatabaseConfig struct {
@@ -39,15 +43,18 @@ type AppConfig struct {
         Port     int    `yaml:"port"`
         Password string `yaml:"password"`
         Database int    `yaml:"database"`
-    }
+    } `yaml:"redisconfig"`
     SessionConfig struct {
-        SessionSecretKey string `yaml:"sessionsecretkey"`
-        SessionName      string `yaml:"sessionname"`
-    }
+        SecretKey      string `yaml:"secretkey"`
+        Name           string `yaml:"name"`
+        MaxAge         int    `yaml:"maxage"`
+        HttpOnly       string `yaml:"httponly"`
+        internHttpOnly bool
+    } `yaml:"sessionconfig"`
     WebConfig struct {
         MaxUploadSize    int64 `yaml:"maxuploadsize"`
         PasswordStrength int   `yaml:"passwordstrength"`
-    }
+    } `yaml:"webconfig"`
 }
 
 // Types for rendering pages with templates
