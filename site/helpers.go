@@ -7,7 +7,38 @@ import (
     "html/template"
     "strings"
     "errors"
+    "golang.org/x/crypto/bcrypt"
 )
+
+// Takes a string (URL) and removes the leading slash if it exists
+func removeLeadingSlash(str string) string {
+    if len(str) == 0 {
+        return str
+    }
+    if str[0] == '/' {
+        return str[1:]
+    }
+    return str
+}
+
+// Takes the password the user provided and the hash to verify it with
+// Returns whether the password matches the hash
+func validatePassword(provided string, storedHash string) bool {
+    storedHashBytes := []byte(storedHash)
+    providedBytes   := []byte(provided)
+    err := bcrypt.CompareHashAndPassword(storedHashBytes, providedBytes)
+    return (err == nil)
+}
+
+// Takes a string password and returns the base64-encoded bcrypt-hashed version
+func hashPassword(provided string) string {
+    providedBytes    := []byte(provided)
+    hashedBytes, err := bcrypt.GenerateFromPassword(providedBytes, config.WebConfig.PasswordStrength)
+    if err != nil {
+        panic(err)
+    }
+    return string(hashedBytes[:])
+}
 
 func makeError(msg string) error {
     return errors.New(msg)

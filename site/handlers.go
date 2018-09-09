@@ -1,6 +1,14 @@
 package main
 
-import "fmt"
+import (
+    "fmt"
+    "net/http"
+)
+
+func serveFile(ctx RequestContext) {
+    location := removeLeadingSlash(ctx.request.URL.Path)
+    http.ServeFile(ctx.response, ctx.request, location)
+}
 
 func getHome(ctx RequestContext) {
     ctx.successRaw("Get home")
@@ -18,6 +26,13 @@ func getFeed(ctx RequestContext) {
     ctx.successRaw("Get feed")
 }
 
+func getRegisterUser(ctx RequestContext) {
+    var pageData PageData
+    inputForm := makeHtmlWithTemplate("../templates/user_create.template", pageData)
+    pageData   = makePageData("Register", inputForm, []Link{{Url:"/static/styles/global.css"}}, make([]Link, 0))
+    ctx.successPage(pageData)
+}
+
 func postTransaction(ctx RequestContext) {
     ctx.successRaw("Post transaction")
 }
@@ -30,40 +45,17 @@ func postLogin(ctx RequestContext) {
     ctx.successRaw("Post login")
 }
 
-func getCreateUser(ctx RequestContext) {
-    var pageData PageData
-    inputForm := makeHtmlWithTemplate("../templates/user_create.template", pageData)
-    pageData = makePageData("Create user", inputForm, make([]Link, 0), make([]Link, 0))
-    ctx.successPage(pageData)
-}
+func postRegisterUser(ctx RequestContext) {
+    user, err := ctx.extractNewUser()
 
-func postCreateUser(ctx RequestContext) {
-    username, ok       := ctx.getFormValue("username")
-    email, ok          := ctx.getFormValue("email")
-    displayName, ok    := ctx.getFormValue("displayName")
-    password, ok       := ctx.getFormValue("password")
-    passwordVerify, ok := ctx.getFormValue("passwordVerify")
-
-    // Just to get it to compile for now
-    if ok {
-
-    }
-
-    if password != passwordVerify {
-        ctx.badRequestRaw(fmt.Sprintf("Passwords do not match: %v, %v", password, passwordVerify))
+    if err != nil {
+        ctx.badRequestRaw(err.Error())
         return
-    }
-
-    user := User {
-        Username: username,
-        DisplayName: displayName,
-        Email: email,
-        PasswordHash: "testinghash",
     }
 
     userId, err := ctx.insertUser(user)
     if err != nil {
-        ctx.badRequestRaw(fmt.Sprintf("%v", err))
+        ctx.badRequestRaw(err.Error())
         return
     }
 

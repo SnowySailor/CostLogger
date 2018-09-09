@@ -45,7 +45,8 @@ type AppConfig struct {
         SessionName      string `yaml:"sessionname"`
     }
     WebConfig struct {
-        MaxUploadSize int64 `yaml:"maxuploadsize"`
+        MaxUploadSize    int64 `yaml:"maxuploadsize"`
+        PasswordStrength int   `yaml:"passwordstrength"`
     }
 }
 

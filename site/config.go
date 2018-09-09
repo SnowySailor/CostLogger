@@ -22,38 +22,42 @@ func (conf *AppConfig) populateAppConfig() {
 }
 
 func (conf *AppConfig) validateWebConfig() []string {
+    var errors []string
     if conf.WebConfig.MaxUploadSize == 0 {
         conf.WebConfig.MaxUploadSize = 32 << 20
     }
-    return make([]string, 0)
+    if conf.WebConfig.PasswordStrength <= 0 {
+        conf.WebConfig.PasswordStrength = 10
+    }
+    return errors
 }
 
 func (conf *AppConfig) validateDatabaseConfig() []string {
+    errors := make([]string, 0)
     if conf.DatabaseConfig.Port == 0 {
         conf.DatabaseConfig.Port = 5432
     }
-    var err []string
     if conf.DatabaseConfig.Host == "" {
-        err = append(err, "No database host provided")
+        errors = append(errors, "No database host provided")
     }
     if conf.DatabaseConfig.Username == "" {
-        err = append(err, "No database user provided")
+        errors = append(errors, "No database user provided")
     }
     if conf.DatabaseConfig.Database == "" {
-        err = append(err, "No database provided")
+        errors = append(errors, "No database provided")
     }
-    return err
+    return errors
 }
 
 func (conf *AppConfig) validateRedisConfig() []string {
+    var errors []string
     if conf.RedisConfig.Port == 0 {
         conf.RedisConfig.Port = 6379
     }
-    var err []string
     if conf.RedisConfig.Host == "" {
-        err = append(err, "No Redis host provided")
+        errors = append(errors, "No Redis host provided")
     }
-    return err
+    return errors
 }
 
 func stringJoin(strings []string, delimiter string) string {
