@@ -22,6 +22,8 @@ func routeRequest(resp http.ResponseWriter, req *http.Request) {
             getFeed(ctx)
         } else if mainRoute == "register" {
             getRegisterUser(ctx)
+        } else if mainRoute == "login" {
+            getLogin(ctx)
         } else if mainRoute == "static" {
             // Try to serve a static file
             serveFile(ctx)

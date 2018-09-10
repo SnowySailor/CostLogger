@@ -105,6 +105,17 @@ func getLastPathRoute(path string) string {
     return lastRoute[:queryIndex]
 }
 
+func makeHtmlWithHeader(templateLocation string, pageData PageData) string {
+    var templateBytes bytes.Buffer
+    t := template.Must(template.ParseFiles("../templates/header.template"))
+
+    if err := t.Execute(&templateBytes, PageData{}); err != nil {
+        panic(err)
+    } else {
+        rest := makeHtmlWithTemplate(templateLocation, pageData)
+        return templateBytes.String() + rest
+    }
+}
 
 func makeHtmlWithTemplate(templateLocation string, pageData PageData) string {
     var templateBytes bytes.Buffer

@@ -37,3 +37,8 @@ func (ctx *RequestContext) getUserId() int {
     }
     return -1
 }
+
+func (ctx *RequestContext) isUserLoggedIn() bool {
+    userId := ctx.getUserId()
+    return userId != -1
+}

@@ -23,13 +23,22 @@ func getTransaction(ctx RequestContext) {
 }
 
 func getFeed(ctx RequestContext) {
-    ctx.successRaw("Get feed")
+    if ctx.isUserLoggedIn() {
+        ctx.successRaw("Get feed")
+    } else {
+        ctx.redirect("login")
+    }
 }
 
 func getRegisterUser(ctx RequestContext) {
-    var pageData PageData
-    inputForm := makeHtmlWithTemplate("../templates/user_create.template", pageData)
-    pageData   = makePageData("Register", inputForm, []Link{{Url:"/static/styles/global.css"}}, []Link{{Url:"/static/scripts/global.js"}})
+    inputForm := makeHtmlWithHeader("../templates/user_create.template", PageData{})
+    pageData  := makePageData("Register", inputForm, []Link{{Url:"/static/styles/global.css"}}, []Link{{Url:"/static/scripts/global.js"}})
+    ctx.successPage(pageData)
+}
+
+func getLogin(ctx RequestContext) {
+    inputForm := makeHtmlWithHeader("../templates/login.template", PageData{})
+    pageData  := makePageData("Login", inputForm, []Link{{Url:"/static/styles/global.css"}}, []Link{{Url:"/static/scripts/global.js"}})
     ctx.successPage(pageData)
 }
 

@@ -26,7 +26,7 @@
         console.log(text);
     }
 </script>
-<div class="flex-container">
+<div class="maincontent flex-container">
     <div id="registerformwrapper" class="formwrapper">
         <div class="centertext headertext">Register</div>
         <form id="registerform" class="width100 height100" method="POST" action="register">
@@ -35,7 +35,7 @@
             <input required class="width100" type="text" name="displayName" placeholder="Display name"/>
             <input required class="width100" type="password" name="password" placeholder="Password"/>
             <input required class="width100" type="password" name="passwordVerify" placeholder="Verify password"/>
-            <input id="registerformsubmit" type="button" onclick="onclickFormSubmit('registerform', registerFormSubmitCallback);" value="Submit"/>
+            <input class="submit" type="button" onclick="onclickFormSubmit('registerform', registerFormSubmitCallback);" value="Submit"/>
         </form>
         <div class="errormsg" id="errormsg"></div>
     </div>

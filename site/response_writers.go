@@ -49,6 +49,13 @@ func (ctx RequestContext) badRequestJSON(resp JSONResponse) {
     ctx.writeResponse(msg, 400, "application/json")
 }
 
+// Redirection writers 
+
+func (ctx RequestContext) redirect(loc string) {
+    ctx.response.Header().Set("Location", loc)
+    ctx.response.WriteHeader(302)
+}
+
 // Main writer
 
 func (ctx RequestContext) writeResponse(msg string, status int, contentType string) {

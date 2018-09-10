@@ -12,6 +12,8 @@
     {{end}}
     </head>
     <body>
-        {{.Body}}
+        <div class="container">
+            {{.Body}}
+        </div>
     </body>
 </html>

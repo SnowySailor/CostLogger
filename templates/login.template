@@ -1,0 +1,29 @@
+<style>
+    input[type='text'], input[type='password'] {
+        padding-left:5px;
+        padding-right:5px;
+        height:25px;
+        margin-top:5px;
+        border-radius:3px;
+        border:1px solid gray;
+    }
+    #registerformwrapper {
+        width:300px;
+    }
+</style>
+<script type="text/javascript"/>
+    function loginFormSubmitCallback(text) {
+        console.log(text);
+    }
+</script>
+<div class="maincontent flex-container">
+    <div id="registerformwrapper" class="formwrapper">
+        <div class="centertext headertext">Login</div>
+        <form id="loginform" class="width100 height100" method="POST" action="register">
+            <input required class="width100" type="text" name="username" placeholder="Username"/>
+            <input required class="width100" type="text" name="password" placeholder="Password"/>
+            <input class="submit" type="button" onclick="onclickFormSubmit('loginform', loginFormSubmitCallback);" value="Submit"/>
+        </form>
+        <div class="errormsg" id="errormsg"></div>
+    </div>
+</div>
