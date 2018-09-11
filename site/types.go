@@ -26,7 +26,8 @@ type RequestContext struct {
 }
 
 type JSONResponse struct {
-    Message string `json:"Message"`
+    Message     string `json:"Message"`
+    RedirectUrl string `json:"RedirectUrl"`
 }
 
 // Configuration
@@ -67,6 +68,11 @@ type PageData struct {
 
 type Link struct {
     Url string
+}
+
+type HeaderData struct {
+    IsUserLoggedIn bool
+    DisplayName    string
 }
 
 // Application data types

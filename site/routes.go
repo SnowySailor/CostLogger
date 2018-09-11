@@ -24,6 +24,8 @@ func routeRequest(resp http.ResponseWriter, req *http.Request) {
             getRegisterUser(ctx)
         } else if mainRoute == "login" {
             getLogin(ctx)
+        } else if mainRoute == "logout" {
+            postLogout(ctx)
         } else if mainRoute == "static" {
             // Try to serve a static file
             serveFile(ctx)
@@ -37,6 +39,8 @@ func routeRequest(resp http.ResponseWriter, req *http.Request) {
             postSettings(ctx)
         } else if mainRoute == "login" {
             postLogin(ctx)
+        } else if mainRoute == "logout" {
+            postLogout(ctx)
         } else if mainRoute == "register" {
             postRegisterUser(ctx)
         } else {

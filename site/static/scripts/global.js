@@ -55,11 +55,14 @@ function httpPost(urlToPost, data, callback) {
     var xmlhttp = new XMLHttpRequest();
     if (isAsync) {
         xmlhttp.onreadystatechange = function() {
+            var resp = {};
+            try { resp = JSON.parse(xmlhttp.responseText); }
+            catch { }
             if (xmlhttp.readyState == 4 && isSuccess(xmlhttp.status)) {
                 showError();
-                callback(xmlhttp.responseText);
+                callback(resp);
             } else if (xmlhttp.readyState == 4 && isBadRequest(xmlhttp.status)) {
-                showError(xmlhttp.responseText);
+                showError(resp.Message);
             }
         }
     }

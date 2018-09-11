@@ -105,11 +105,26 @@ func getLastPathRoute(path string) string {
     return lastRoute[:queryIndex]
 }
 
-func makeHtmlWithHeader(templateLocation string, pageData PageData) string {
+func (ctx *RequestContext) getUserDisplayName() string {
+    if !ctx.isUserLoggedIn() {
+        return ""
+    }
+    user, err := ctx.getUser(ctx.userId)
+    if err != nil {
+        return ""
+    }
+    return user.DisplayName
+}
+
+func (ctx *RequestContext) makeHtmlWithHeader(templateLocation string, pageData PageData) string {
     var templateBytes bytes.Buffer
     t := template.Must(template.ParseFiles("../templates/header.template"))
 
-    if err := t.Execute(&templateBytes, PageData{}); err != nil {
+    headerData := HeaderData {
+        IsUserLoggedIn: ctx.isUserLoggedIn(),
+        DisplayName: ctx.getUserDisplayName(),
+    }
+    if err := t.Execute(&templateBytes, headerData); err != nil {
         panic(err)
     } else {
         rest := makeHtmlWithTemplate(templateLocation, pageData)

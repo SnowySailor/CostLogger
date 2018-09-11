@@ -1,7 +1,6 @@
 package main
 
 import (
-    "fmt"
     "net/http"
 )
 
@@ -11,11 +10,21 @@ func serveFile(ctx RequestContext) {
 }
 
 func getHome(ctx RequestContext) {
-    ctx.successRaw("Get home")
+    if ctx.isUserLoggedIn() {
+        home     := ctx.makeHtmlWithHeader("../templates/home.template", PageData{})
+        pageData := makePageData("Home", home, []Link{{Url:"/static/styles/global.css"}}, []Link{{Url:"/static/scripts/global.js"}})
+        ctx.successPage(pageData)
+    } else {
+        ctx.redirect("login")
+    }
 }
 
 func getSettings(ctx RequestContext) {
-    ctx.successRaw("Get settings")
+    if ctx.isUserLoggedIn() {
+        ctx.successRaw("Get settings")
+    } else {
+        ctx.redirect("login")
+    }
 }
 
 func getTransaction(ctx RequestContext) {
@@ -31,15 +40,26 @@ func getFeed(ctx RequestContext) {
 }
 
 func getRegisterUser(ctx RequestContext) {
-    inputForm := makeHtmlWithHeader("../templates/user_create.template", PageData{})
+    inputForm := ctx.makeHtmlWithHeader("../templates/register.template", PageData{})
     pageData  := makePageData("Register", inputForm, []Link{{Url:"/static/styles/global.css"}}, []Link{{Url:"/static/scripts/global.js"}})
     ctx.successPage(pageData)
 }
 
 func getLogin(ctx RequestContext) {
-    inputForm := makeHtmlWithHeader("../templates/login.template", PageData{})
-    pageData  := makePageData("Login", inputForm, []Link{{Url:"/static/styles/global.css"}}, []Link{{Url:"/static/scripts/global.js"}})
-    ctx.successPage(pageData)
+    if !ctx.isUserLoggedIn() {
+        inputForm := ctx.makeHtmlWithHeader("../templates/login.template", PageData{})
+        pageData  := makePageData("Login", inputForm, []Link{{Url:"/static/styles/global.css"}}, []Link{{Url:"/static/scripts/global.js"}})
+        ctx.successPage(pageData)
+    } else {
+        ctx.redirect("home")
+    }
+}
+
+func getLogout(ctx RequestContext) {
+    if ctx.isUserLoggedIn() {
+        ctx.logoutUser()
+    }
+    ctx.redirect("login")
 }
 
 func postTransaction(ctx RequestContext) {
@@ -56,8 +76,16 @@ func postLogin(ctx RequestContext) {
     if !succ {
         ctx.badRequestJSON(response)
     } else {
+        response.RedirectUrl = "home"
         ctx.successJSON(response)
     }
+}
+
+func postLogout(ctx RequestContext) {
+    if ctx.isUserLoggedIn() {
+        ctx.logoutUser()
+    }
+    ctx.redirect("login")
 }
 
 func postRegisterUser(ctx RequestContext) {
@@ -68,11 +96,12 @@ func postRegisterUser(ctx RequestContext) {
         return
     }
 
-    userId, err := ctx.insertUser(user)
+    _, err = ctx.insertUser(user)
     if err != nil {
         ctx.badRequestRaw(err.Error())
         return
     }
-
-    ctx.successRaw(fmt.Sprintf("Created user %v", userId))
+    response := makeJSONResponse("")
+    response.RedirectUrl = "login"
+    ctx.successJSON(response)
 }

@@ -24,7 +24,7 @@ func (ctx *RequestContext) extractNewUser() (User, error) {
 
     passwordVerify, ok := ctx.getFormValue("passwordVerify")
     if !ok || passwordVerify == "" {
-        return user, makeError("Password verification not provide.")
+        return user, makeError("Password verification not provided.")
     }
 
     if password != passwordVerify {

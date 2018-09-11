@@ -1,3 +1,82 @@
+<style>
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropbtn {
+    background-color: #eee;
+    padding: 0px 5px 0px 5px;
+    font-size: 16px;
+    border: none;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.dropdown-content {
+    position: absolute;
+    background-color: #f1f1f1;
+    min-width: 160px;
+    overflow: auto;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.dropdown-content a {
+    color: black;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.displayname {
+    font-weight:bold;
+}
+
+.userinfo {
+    display:inline-block;
+}
+
+.dropdown-content a:hover, .dropdown-content a:focus {
+    background-color:#e1e1e1;
+}
+
+.userbackground {
+    background-color:#ddd;
+    border-radius: 3px;
+}
+
+</style>
 <div class="topbar">
     <div class="sitelogo">Cost Logger</div>
+    <div class="sitelinks"></div>
+    <div class="userbox">
+        {{if .IsUserLoggedIn}}
+        <div class="userbackground">
+            <div class="dropdown">
+                <div id="dropdowncontainer">
+                    <button id="dropdown" class="dropbtn"><i class="downarrow"></i></button>
+                    <div id="dropdownlist" class="hidden dropdown-content">
+                        <a href="settings">settings</a>
+                        <a href="logout">logout</a>
+                    </div>
+                </div>
+            </div>
+            <div class="userinfo">
+                <span class="displayname">{{.DisplayName}}</span>
+            </div>
+        </div>
+        {{end}}
+    </div>
 </div>
+<script type="text/javascript">
+    var input = getElement('dropdowncontainer');
+    input.addEventListener("mouseover", function(event) {
+        console.log("over");
+        show('dropdownlist');
+    });
+    input.addEventListener("mouseout", function(event) {
+        console.log("leave");
+        hide('dropdownlist');
+    })
+</script>
