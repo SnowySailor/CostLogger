@@ -11,7 +11,9 @@
             <input required class="width100" type="password" name="password" placeholder="Password"/>
             <input id="submitform" class="submit" type="button" onclick="onclickFormSubmit('loginform', loginFormSubmitCallback);" value="Login"/>
         </form>
-        <div class="errormsg" id="errormsg"></div>
+        <div class="errormsgcontainer">
+            <div class="errormsg" id="errormsg"></div>
+        </div>
     </div>
 </div>
 <script type="text/javascript">
