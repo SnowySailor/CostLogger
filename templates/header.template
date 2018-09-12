@@ -69,14 +69,14 @@
         {{end}}
     </div>
 </div>
+{{if .IsUserLoggedIn}}
 <script type="text/javascript">
     var input = getElement('dropdowncontainer');
     input.addEventListener("mouseover", function(event) {
-        console.log("over");
         show('dropdownlist');
     });
     input.addEventListener("mouseout", function(event) {
-        console.log("leave");
         hide('dropdownlist');
     })
 </script>
+{{end}}

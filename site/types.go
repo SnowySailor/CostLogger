@@ -53,8 +53,9 @@ type AppConfig struct {
         internHttpOnly bool
     } `yaml:"sessionconfig"`
     WebConfig struct {
-        MaxUploadSize    int64 `yaml:"maxuploadsize"`
-        PasswordStrength int   `yaml:"passwordstrength"`
+        MaxUploadSize     int64 `yaml:"maxuploadsize"`
+        PasswordStrength  int   `yaml:"passwordstrength"`
+        MinPasswordLength int   `yaml:"minpasswordlength"`
     } `yaml:"webconfig"`
 }
 
@@ -85,16 +86,17 @@ type User struct {
 }
 
 type Transaction struct {
-    Id              int
-    Amount          int // Example: 5049 = $50.49
+    Id              int               `json:"id"`
+    Amount          int               `json:"amount"`// Example: 5049 = $50.49
+    Comments        string            `json:"comments"`
     CreateDate      time.Time
     UserId          int
-    InvolvedUsers   []TransactionUser
+    InvolvedUsers   []TransactionUser `json:"involvesusers"`
     LastUpdateTime  time.Time
 }
 
 type TransactionUser struct {
-    UserId             int
-    TransactionId      int
-    PercentInvolvement int // Example: 5049 = 50.49%
+    UserId             int `json:"userid"`
+    TransactionId      int `json:"transactionid"`
+    PercentInvolvement int `json:"percentinvolvement"` // Example: 5049 = 50.49%
 }

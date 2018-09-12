@@ -63,6 +63,15 @@ func strToLower(value string) string {
     return strings.ToLower(value)
 }
 
+func intInList(value int, list []int) bool {
+    for i := 0; i < len(list); i = i+1 {
+        if value == list[i] {
+            return true
+        }
+    }
+    return false
+}
+
 func strInList(value string, list []string) bool {
     for i := 0; i < len(list); i = i+1 {
         if value == list[i] {

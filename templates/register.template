@@ -32,7 +32,7 @@
 <script type="text/javascript">
     function registerFormSubmitCallback(resp) {
         if (resp.Message) {
-            showError(rest.Message);
+            showError(resp.Message);
         } else if (resp.RedirectUrl) {
             window.location.href = resp.RedirectUrl;
         }

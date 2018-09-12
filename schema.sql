@@ -23,11 +23,12 @@ CREATE TABLE APP_USER (
 );
 
 CREATE TABLE TRANSACTION (
-    Id               SERIAL    PRIMARY KEY,
-    Amount           INT       NOT NULL,
-    Create_Date      TIMESTAMP NOT NULL,
-    UserId           INT       NOT NULL REFERENCES APP_USER(Id),
-    Last_Update_Time TIMESTAMP NOT NULL
+    Id               SERIAL       PRIMARY KEY,
+    Amount           INT          NOT NULL,
+    Comments         VARCHAR(500) NULL,
+    Create_Date      TIMESTAMP    NOT NULL,
+    UserId           INT          NOT NULL REFERENCES APP_USER(Id),
+    Last_Update_Time TIMESTAMP    NOT NULL
 );
 
 CREATE TABLE TRANSACTION_USER (

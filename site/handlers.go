@@ -63,7 +63,32 @@ func getLogout(ctx RequestContext) {
 }
 
 func postTransaction(ctx RequestContext) {
-    ctx.successRaw("Post transaction")
+    response := makeJSONResponse("")
+
+    // Get transaction
+    transaction, err := ctx.extractTransaction()
+    if err != nil {
+        response.Message = err.Error()
+        ctx.badRequestJSON(response)
+        return
+    }
+
+    // Validate transaction
+    err = ctx.validateTransaction(transaction)
+    if err != nil {
+        response.Message = err.Error()
+        ctx.badRequestJSON(response)
+        return
+    }
+
+    // Insert transaction
+    _, err = ctx.insertTransaction(transaction)
+    if err != nil {
+        response.Message = err.Error()
+        ctx.badRequestJSON(response)
+        return
+    }
+    ctx.successJSON(response)
 }
 
 func postSettings(ctx RequestContext) {
@@ -89,19 +114,33 @@ func postLogout(ctx RequestContext) {
 }
 
 func postRegisterUser(ctx RequestContext) {
-    user, err := ctx.extractNewUser()
+    response  := makeJSONResponse("")
 
+    // Get user
+    user, err := ctx.extractNewUser()
     if err != nil {
-        ctx.badRequestRaw(err.Error())
+        response.Message = err.Error()
+        ctx.badRequestJSON(response)
         return
     }
 
+    // Validate user
+    err = ctx.validateNewUser(user)
+    if err != nil {
+        response.Message = err.Error()
+        ctx.badRequestJSON(response)
+        return
+    }
+
+    // Create user
     _, err = ctx.insertUser(user)
     if err != nil {
-        ctx.badRequestRaw(err.Error())
+        response.Message = err.Error()
+        ctx.badRequestJSON(response)
         return
     }
-    response := makeJSONResponse("")
+
+    // Redirect to login
     response.RedirectUrl = "login"
     ctx.successJSON(response)
 }

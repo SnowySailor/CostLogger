@@ -24,6 +24,14 @@ func getDatabaseConnection() (*sql.DB, error) {
 // USER QUERIES
 // //////////////////////////////////////////////////////////////
 
+func (ctx *RequestContext) doesUserExist(id int) bool {
+    var uId int
+    query := "select id from app_user where id = $1"
+    row   := ctx.database.QueryRow(query, id)
+    err   := row.Scan(&uId)
+    return (err == nil)
+}
+
 // Get a single user by their id
 func (ctx *RequestContext) getUser(id int) (User, error) {
     return ctx.getUserBy("id", id)
@@ -66,9 +74,9 @@ func (ctx *RequestContext) insertUser(user User) (int, error) {
 func (ctx *RequestContext) getTransaction(transactionId int) (Transaction, error) {
     var transaction Transaction
     // Query
-    query := "select id, amount, createdate, userid, lastupdatetime from transaction where id = $1"
+    query := "select id, amount, comments, createdate, userid, lastupdatetime from transaction where id = $1"
     row   := ctx.database.QueryRow(query, transactionId)
-    err   := row.Scan(&transaction.Id, &transaction.Amount, &transaction.CreateDate, &transaction.UserId, &transaction.LastUpdateTime)
+    err   := row.Scan(&transaction.Id, &transaction.Amount, &transaction.Comments, &transaction.CreateDate, &transaction.UserId, &transaction.LastUpdateTime)
 
     if err != nil {
         return transaction, err
@@ -84,15 +92,15 @@ func (ctx *RequestContext) getTransaction(transactionId int) (Transaction, error
 func (ctx *RequestContext) insertTransaction(transaction Transaction) (int, error) {
     var transactionId int
 
-    // Begin transaction
+    // Begin database transaction
     tx, err := ctx.database.Begin()
     if err != nil {
         return transactionId, err
     }
 
     // Insert main transaction
-    query   := "insert into transaction (amount, user_id) values ($1, $2) returning id"
-    row     := ctx.database.QueryRow(query, transaction.Amount, transaction.UserId)
+    query   := "insert into transaction (amount, comments, user_id) values ($1, $2, $3) returning id"
+    row     := ctx.database.QueryRow(query, transaction.Amount, transaction.Comments, transaction.UserId)
     err     = row.Scan(&transactionId)
 
     // Insert all involved users
@@ -107,7 +115,7 @@ func (ctx *RequestContext) insertTransaction(transaction Transaction) (int, erro
         }
     }
 
-    // Commit transaction
+    // Commit database transaction
     err = tx.Commit()
     if err != nil {
         panic(err)
