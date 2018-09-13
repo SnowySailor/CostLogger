@@ -18,8 +18,6 @@ func routeRequest(resp http.ResponseWriter, req *http.Request) {
             getSettings(ctx)
         } else if mainRoute == "transaction" {
             getTransaction(ctx)
-        } else if mainRoute == "feed" {
-            getFeed(ctx)
         } else if mainRoute == "register" {
             getRegisterUser(ctx)
         } else if mainRoute == "login" {

@@ -76,6 +76,10 @@ type HeaderData struct {
     DisplayName    string
 }
 
+type FeedData struct {
+    Transactions []Transaction
+}
+
 // Application data types
 type User struct {
     Id           int

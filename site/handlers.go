@@ -11,8 +11,18 @@ func serveFile(ctx RequestContext) {
 
 func getHome(ctx RequestContext) {
     if ctx.isUserLoggedIn() {
-        home     := ctx.makeHtmlWithHeader("../templates/home.template", PageData{})
-        pageData := makePageData("Home", home, []Link{{Url:"/static/styles/global.css"}}, []Link{{Url:"/static/scripts/global.js"}})
+        feed, err := ctx.getFeedHtml()
+        if err != nil {
+            ctx.badRequestRaw("Error 1 - Internal error rendering page")
+            return
+        }
+        pageData  := makePageData("Feed", feed, []Link{}, []Link{})
+        home, err := ctx.makeHtmlWithHeader("../templates/home.template", pageData)
+        if err != nil {
+            ctx.badRequestRaw("Error 2 - Internal error rendering page")
+            return
+        }
+        pageData = makePageData("Home", home, []Link{{Url:"/static/styles/global.css"}}, []Link{{Url:"/static/scripts/global.js"}})
         ctx.successPage(pageData)
     } else {
         ctx.redirect("login")
@@ -31,24 +41,38 @@ func getTransaction(ctx RequestContext) {
     ctx.successRaw("Get transaction")
 }
 
-func getFeed(ctx RequestContext) {
-    if ctx.isUserLoggedIn() {
-        ctx.successRaw("Get feed")
-    } else {
-        ctx.redirect("login")
+func (ctx *RequestContext) getFeedHtml() (string, error) {
+    transactions, err := ctx.getUserTransactions(ctx.userId)
+    if err != nil {
+        println(err.Error())
+        return "", err
     }
+    feedData := FeedData{Transactions:transactions,}
+    feed, err := makeHtml("../templates/feed.template", feedData)
+    if err != nil {
+        return "", err
+    }
+    return feed, nil
 }
 
 func getRegisterUser(ctx RequestContext) {
-    inputForm := ctx.makeHtmlWithHeader("../templates/register.template", PageData{})
-    pageData  := makePageData("Register", inputForm, []Link{{Url:"/static/styles/global.css"}}, []Link{{Url:"/static/scripts/global.js"}})
+    inputForm, err  := ctx.makeHtmlWithHeader("../templates/register.template", PageData{})
+    if err != nil {
+        ctx.badRequestRaw("Internal error rendering page")
+        return
+    }
+    pageData        := makePageData("Register", inputForm, []Link{{Url:"/static/styles/global.css"}}, []Link{{Url:"/static/scripts/global.js"}})
     ctx.successPage(pageData)
 }
 
 func getLogin(ctx RequestContext) {
     if !ctx.isUserLoggedIn() {
-        inputForm := ctx.makeHtmlWithHeader("../templates/login.template", PageData{})
-        pageData  := makePageData("Login", inputForm, []Link{{Url:"/static/styles/global.css"}}, []Link{{Url:"/static/scripts/global.js"}})
+        inputForm, err  := ctx.makeHtmlWithHeader("../templates/login.template", PageData{})
+        if err != nil {
+            ctx.badRequestRaw("Internal error rendering page")
+            return
+        }
+        pageData        := makePageData("Login", inputForm, []Link{{Url:"/static/styles/global.css"}}, []Link{{Url:"/static/scripts/global.js"}})
         ctx.successPage(pageData)
     } else {
         ctx.redirect("home")

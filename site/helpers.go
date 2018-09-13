@@ -125,7 +125,7 @@ func (ctx *RequestContext) getUserDisplayName() string {
     return user.DisplayName
 }
 
-func (ctx *RequestContext) makeHtmlWithHeader(templateLocation string, pageData PageData) string {
+func (ctx *RequestContext) makeHtmlWithHeader(templateLocation string, data interface{}) (string, error) {
     var templateBytes bytes.Buffer
     t := template.Must(template.ParseFiles("../templates/header.template"))
 
@@ -134,21 +134,24 @@ func (ctx *RequestContext) makeHtmlWithHeader(templateLocation string, pageData 
         DisplayName: ctx.getUserDisplayName(),
     }
     if err := t.Execute(&templateBytes, headerData); err != nil {
-        panic(err)
+        return "", err
     } else {
-        rest := makeHtmlWithTemplate(templateLocation, pageData)
-        return templateBytes.String() + rest
+        rest, err := makeHtml(templateLocation, data)
+        if err != nil {
+            return "", err
+        }
+        return templateBytes.String() + rest, nil
     }
 }
 
-func makeHtmlWithTemplate(templateLocation string, pageData PageData) string {
+func makeHtml(templateLocation string, data interface{}) (string, error) {
     var templateBytes bytes.Buffer
     t := template.Must(template.ParseFiles(templateLocation))
 
-    if err := t.Execute(&templateBytes, pageData); err != nil {
-        panic(err)
+    if err := t.Execute(&templateBytes, data); err != nil {
+        return "", err
     } else {
-        return templateBytes.String()
+        return templateBytes.String(), err
     }
 }
 

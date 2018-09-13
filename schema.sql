@@ -25,15 +25,15 @@ CREATE TABLE APP_USER (
 CREATE TABLE TRANSACTION (
     Id               SERIAL       PRIMARY KEY,
     Amount           INT          NOT NULL,
-    Comments         VARCHAR(500) NULL,
-    Create_Date      TIMESTAMP    NOT NULL,
-    UserId           INT          NOT NULL REFERENCES APP_USER(Id),
-    Last_Update_Time TIMESTAMP    NOT NULL
+    Comments         VARCHAR(500) NOT NULL DEFAULT(''),
+    Create_Date      TIMESTAMP    NOT NULL DEFAULT(NOW() AT TIME ZONE 'UTC'),
+    User_Id          INT          NOT NULL REFERENCES APP_USER(Id),
+    Last_Update_Time TIMESTAMP    NOT NULL DEFAULT(NOW() AT TIME ZONE 'UTC')
 );
 
 CREATE TABLE TRANSACTION_USER (
     Transaction_Id INT NOT NULL REFERENCES TRANSACTION(Id),
     User_Id        INT NOT NULL REFERENCES APP_USER(Id),
     Percentage     INT NOT NULL,
-    PRIMARY KEY (TransactionId, UserId)
+    PRIMARY KEY (Transaction_Id, User_Id)
 );

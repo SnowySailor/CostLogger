@@ -12,12 +12,18 @@ func (ctx RequestContext) notFoundPage(msg string) {
 // HTML writers
 
 func (ctx RequestContext) successPage(data PageData) {
-    result := makeHtmlWithTemplate("../templates/page_wrapper.template", data)
+    result, err := makeHtml("../templates/page_wrapper.template", data)
+    if err != nil {
+        ctx.badRequestRaw("Internal error rendering page")
+    }
     ctx.writeResponse(result, 200, "text/html")
 }
 
 func (ctx RequestContext) badRequestPage(data PageData) {
-    result := makeHtmlWithTemplate("../templates/page_wrapper.template", data)
+    result, err := makeHtml("../templates/page_wrapper.template", data)
+    if err != nil {
+        ctx.badRequestRaw("Internal error rendering page")
+    }
     ctx.writeResponse(result, 400, "text/html")
 }
 

@@ -1,0 +1,9 @@
+<div>
+    {{range .Transactions}}
+    <div class="transactioncontainer">
+        {{.UserId}}
+        {{.Amount}}
+        {{.CreateDate}}
+    </div>
+    {{end}}
+</div>

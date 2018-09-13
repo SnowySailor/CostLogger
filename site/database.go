@@ -3,6 +3,7 @@ package main
 import (
     "database/sql"
     "fmt"
+    "sort"
     _ "github.com/lib/pq"
 )
 
@@ -74,7 +75,7 @@ func (ctx *RequestContext) insertUser(user User) (int, error) {
 func (ctx *RequestContext) getTransaction(transactionId int) (Transaction, error) {
     var transaction Transaction
     // Query
-    query := "select id, amount, comments, createdate, userid, lastupdatetime from transaction where id = $1"
+    query := "select id, amount, comments, create_date, user_id, last_update_time from transaction where id = $1"
     row   := ctx.database.QueryRow(query, transactionId)
     err   := row.Scan(&transaction.Id, &transaction.Amount, &transaction.Comments, &transaction.CreateDate, &transaction.UserId, &transaction.LastUpdateTime)
 
@@ -153,6 +154,53 @@ func (ctx *RequestContext) insertTransactionUser(user TransactionUser) error {
     query   := "insert into transaction_user (user_id, transaction_id, percentage) values ($1, $2, $3)"
     _, err := ctx.database.Exec(query, user.UserId, user.TransactionId, user.PercentInvolvement)
     return err
+}
+
+// Get all transactions that a user is involved in
+func (ctx *RequestContext) getUserTransactions(userId int) ([]Transaction, error) {
+    var transactions []Transaction
+
+    // Queries
+    userTransactionsQ     := "select id, amount, comments, create_date, user_id, last_update_time from transaction where user_id = $1"
+    involvedTransactionsQ := "select T.id, T.amount, T.comments, T.create_date, T.user_id, T.last_update_time from transaction T inner join transaction_user TU on TU.transaction_id = T.id where TU.user_id = $1"
+
+    // Get the transactions that the user has created
+    rows, err := ctx.database.Query(userTransactionsQ, userId)
+    if err != nil {
+        return make([]Transaction, 0), err
+    }
+
+    defer rows.Close()
+    for rows.Next() {
+        var transaction Transaction
+        err = rows.Scan(&transaction.Id, &transaction.Amount, &transaction.Comments, &transaction.CreateDate, &transaction.UserId, &transaction.LastUpdateTime)
+        if err != nil {
+            return make([]Transaction, 0), err
+        }
+        transactions = append(transactions, transaction)
+    }
+
+    // Get transactions that the user has been involved in
+    rows, err = ctx.database.Query(involvedTransactionsQ, userId)
+    if err != nil {
+        return make([]Transaction, 0), err
+    }
+
+    defer rows.Close()
+    for rows.Next() {
+        var transaction Transaction
+        err = rows.Scan(&transaction.Id, &transaction.Amount, &transaction.Comments, &transaction.CreateDate, &transaction.UserId, &transaction.LastUpdateTime)
+        if err != nil {
+            return make([]Transaction, 0), err
+        }
+        transactions = append(transactions, transaction)
+    }
+
+    // Sort by CreateDate
+    sort.Slice(transactions, func(i int, j int) bool {
+        return transactions[i].CreateDate.Before(transactions[j].CreateDate)
+    })
+    return transactions, nil
 }
 
 // //////////////////////////////////////////////////////////////
