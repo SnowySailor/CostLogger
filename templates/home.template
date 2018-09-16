@@ -1,1 +1,6 @@
-{{.Body}}
+<div>
+    Transactions
+</div>
+<div>
+    {{.Body}}
+</div>

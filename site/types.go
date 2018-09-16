@@ -10,8 +10,9 @@ import (
 )
 
 // Type alias so methods can be defined on non-local types
-type Redis redis.Client
+type Redis   redis.Client
 type Session sessions.Session
+type flint   int
 
 // Request context
 type RequestContext struct {
@@ -91,16 +92,16 @@ type User struct {
 
 type Transaction struct {
     Id              int               `json:"id"`
-    Amount          int               `json:"amount"`// Example: 5049 = $50.49
+    Amount          flint             `json:"amount"`// Example: 5049 = $50.49
     Comments        string            `json:"comments"`
     CreateDate      time.Time
     UserId          int
     InvolvedUsers   []TransactionUser `json:"involvesusers"`
-    LastUpdateTime  time.Time
+    LastUpdateDate  time.Time
 }
 
 type TransactionUser struct {
-    UserId             int `json:"userid"`
-    TransactionId      int `json:"transactionid"`
-    PercentInvolvement int `json:"percentinvolvement"` // Example: 5049 = 50.49%
+    UserId             int   `json:"userid"`
+    TransactionId      int   `json:"transactionid"`
+    PercentInvolvement flint `json:"percentinvolvement"` // Example: 5049 = 50.49%
 }

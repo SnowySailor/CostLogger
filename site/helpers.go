@@ -9,7 +9,55 @@ import (
     "errors"
     "golang.org/x/crypto/bcrypt"
     "encoding/json"
+    "strconv"
 )
+
+func (f flint) FlintToString(baseOffset int, decimalPlaces int) string {
+    strVal := strconv.Itoa(int(f))
+    major  := ""
+    minor  := ""
+    if len(strVal) > baseOffset {
+        minor = strVal[(len(strVal)-baseOffset):]
+        major = strVal[:(len(strVal)-baseOffset)]
+    } else {
+        major = "0"
+        minor = strVal
+    }
+    minor = trim(padString(minor, decimalPlaces, "0", true), decimalPlaces)
+    ret := major
+    if decimalPlaces == 0 {
+        return ret
+    }
+    return ret + "." + minor
+}
+
+func trim(s string, l int) string {
+    if l <= 0 {
+        return ""
+    }
+    if len(s) < l {
+        return s
+    }
+    return s[:l]
+}
+
+func padString(s string, l int, pad string, beginning bool) string {
+    if len(s) >= l {
+        return s
+    }
+    if len(pad) == 0 {
+        panic("padString: Argument `pad` is empty; avoiding infinite loop")
+    }
+    remaining := int((l - len(s))/len(pad))
+    for i := 0; i < remaining; i = i+1 {
+        if beginning {
+            s = pad + s
+        } else {
+            s = s + pad
+        }
+    }
+    return s
+}
 
 // Takes a string (URL) and removes the leading slash if it exists
 func removeLeadingSlash(str string) string {

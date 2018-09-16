@@ -55,7 +55,7 @@ func (ctx *RequestContext) extractTransaction() (Transaction, error) {
     var t Transaction
     now := time.Now().UTC()
     err := json.Unmarshal(ctx.getRequestBody(), &t)
-    t.LastUpdateTime = now
+    t.LastUpdateDate = now
     t.CreateDate     = now
     t.UserId         = ctx.userId
     return t, err
@@ -94,7 +94,7 @@ func (ctx *RequestContext) validateTransaction(transaction Transaction) error {
             return makeError("InvolvedUsers contains duplicate users")
         }
         userIds = append(userIds, tUser.UserId)
-        percentSum = percentSum + tUser.PercentInvolvement
+        percentSum = percentSum + int(tUser.PercentInvolvement)
     }
     // if percentSum != 100.00%
     if percentSum != 10000 {

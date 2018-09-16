@@ -14,6 +14,7 @@ func getHome(ctx RequestContext) {
         feed, err := ctx.getFeedHtml()
         if err != nil {
             ctx.badRequestRaw("Error 1 - Internal error rendering page")
+            println(err.Error())
             return
         }
         pageData  := makePageData("Feed", feed, []Link{}, []Link{})

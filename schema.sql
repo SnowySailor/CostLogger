@@ -25,10 +25,10 @@ CREATE TABLE APP_USER (
 CREATE TABLE TRANSACTION (
     Id               SERIAL       PRIMARY KEY,
     Amount           INT          NOT NULL,
-    Comments         VARCHAR(500) NOT NULL DEFAULT(''),
+    Comments         VARCHAR(500) NULL,
     Create_Date      TIMESTAMP    NOT NULL DEFAULT(NOW() AT TIME ZONE 'UTC'),
     User_Id          INT          NOT NULL REFERENCES APP_USER(Id),
-    Last_Update_Time TIMESTAMP    NOT NULL DEFAULT(NOW() AT TIME ZONE 'UTC')
+    Last_Update_Date TIMESTAMP    NOT NULL DEFAULT(NOW() AT TIME ZONE 'UTC')
 );
 
 CREATE TABLE TRANSACTION_USER (
