@@ -1,3 +1,9 @@
+function randomInt(min, max) {
+    var rnd = Math.random();
+    rnd = Math.floor(rnd * (max - min));
+    return rnd + min;
+}
+
 function isInList(e, l) {
     if (!l) { return false; }
     for (var i = 0; i < l.length; i++) {

@@ -14,7 +14,7 @@
     background-color:#777;
 }
 </style>
-<div class="transactionlist">
+<div id="transactionlist" class="transactionlist">
     {{range .Transactions}}
     <div class="transactioncontainer">
         <div class="userlabel">User: {{.UserId}}</div>
@@ -30,15 +30,15 @@
             {{end}}
         </div>
         {{if .InvolvedUsers}}
-        <button type="button" onclick="onclickAddUsers({{.Id}})">+</button>
+        <button type="button" id="transaction_{{.Id}}_add_btn" onclick="onclickAddUser({{.Id}})">+</button>
         {{else}}
-        <button type="button" onclick="onclickAddUsers({{.Id}})">Add Involved Users</button>
+        <button type="button" id="transaction_{{.Id}}_add_btn" onclick="onclickAddUser({{.Id}})">Add Involved Users</button>
         {{end}}
     </div>
     {{end}}
 </div>
 <script type="text/javascript">
-    function onclickAddUsers(transactionId) {
+    function onclickAddUser(transactionId) {
         var userContainer = getElement('transactionusers_' + transactionId.toString());
         if (!userContainer) { return; }
         var existingUsers     = getElementChildren('transactionusers_' + transactionId.toString());
@@ -47,8 +47,8 @@
         var newPercentInput   = document.createElement('INPUT');
 
         addClassToElem(newUserWithInputs, 'transactionuser');
-        addClassToElem(newUserSelect    , 'userlabelinput');
-        addClassToElem(newPercentInput  , 'percentagelabelinput');
+        addClassToElem(newUserSelect    , 'userinput');
+        addClassToElem(newPercentInput  , 'percentageinput');
 
         newPercentInput.type        = 'number';
         newPercentInput.min         = '0';
@@ -57,11 +57,19 @@
         newPercentInput.placeholder = 'Percentage';
 
         var existingUserIds = [];
+        // Get users that existed on page load
         for (var i = 0; i < existingUsers.length; i++) {
             var existingUser = existingUsers[i];
             user = existingUser.getElementsByClassName('userlabel');
             if (user.length != 1) { continue; }
             existingUserIds.push(toInt(user[0].getAttribute('data-user')));
+        }
+        // Get users that were added after page load
+        for (var i = 0; i < existingUsers.length; i++) {
+            var existingUser = existingUsers[i];
+            user = existingUser.getElementsByClassName('userinput');
+            if (user.length != 1) { continue; }
+            existingUserIds.push(toInt(user[0].value));
         }
 
         var users = getAllUsers();
@@ -81,5 +89,9 @@
 
         userContainer.appendChild(newUserWithInputs);
 
+        // If we've selected all users, hide the add button
+        if (users.length == existingUserIds.length + 1) {
+            hide('transaction_' + transactionId + '_add_btn');
+        }
     }
 </script>
