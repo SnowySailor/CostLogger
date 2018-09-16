@@ -127,6 +127,12 @@ i.downarrow {
     height: 100%;
 }
 
+.clickable {
+    cursor:pointer;
+    color:blue;
+    text-decoration:underline;
+}
+
 .hidden{display:none;}
 .centertext{text-align:center;}
 .width100{width:100%;}

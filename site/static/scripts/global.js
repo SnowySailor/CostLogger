@@ -1,3 +1,33 @@
+function isInList(e, l) {
+    if (!l) { return false; }
+    for (var i = 0; i < l.length; i++) {
+        if (e == l[i]) { return true; }
+    }
+    return false;
+}
+
+function toInt(v, d) {
+    if (!d) { d = 0; }
+    var n = parseInt(v);
+    if (isNaN(n)) { return d; }
+    return n;
+}
+
+function getElementChildren(id) {
+    var e = getElement(id);
+    if (!e) { return []; }
+    return e.children;
+}
+
+function getAllUsers() {
+    return [
+        {Id: 1, Name: 'Bob'},
+        {Id: 2, Name: 'Andy'},
+        {Id: 3, Name: 'Alice'},
+        {Id: 4, Name: 'Jimothy'}
+    ];
+}
+
 function getElement(id) {
     if (!id) {
         return null;
@@ -99,15 +129,20 @@ function hide(id) {
 
 function addClass(id, c) {
     var e = getElement(id);
-    if(e) {
-        e = e.classList;
+    addClassToElem(e, c);
+}
+
+function addClassToElem(e, c) {
+    var cl = null
+    if (e) {
+        cl = e.classList;
     } else {
         return;
     }
-    if (e.contains(c)) {
+    if (cl.contains(c)) {
         return;
     }
-    e.add(c);
+    cl.add(c);
 }
 
 function removeClass(id, c){

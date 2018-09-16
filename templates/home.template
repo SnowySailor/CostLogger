@@ -1,5 +1,14 @@
-<div>
-    Transactions
+<style>
+.feedheader {
+    width:500px;
+    margin-left:auto;
+    margin-right:auto;
+    text-align:center;
+}
+</style>
+<div class="feedheader">
+    <h2>Transactions</h2>
+    <button type="button" onclick="onclickAddTransaction()">Add Transaction</button>
 </div>
 <div>
     {{.Body}}
