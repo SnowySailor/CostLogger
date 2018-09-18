@@ -1,3 +1,23 @@
+function getValueById(id) {
+    var e = getElement(id);
+    if (e) { return e.value || ""; }
+    return "";
+}
+
+function getValue(e) {
+    if (e) { return e.value || ""; }
+    return "";
+}
+
+function setValueById(id, v) {
+    var e = getElement(id);
+    if (e) { e.value = v; }
+}
+
+function setValue(e, v) {
+    if (e) { e.value = v; }
+}
+
 function randomInt(min, max) {
     var rnd = Math.random();
     rnd = Math.floor(rnd * (max - min));

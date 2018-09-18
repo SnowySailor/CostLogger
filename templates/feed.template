@@ -41,6 +41,7 @@
     function onclickAddUser(transactionId) {
         var userContainer = getElement('transactionusers_' + transactionId.toString());
         if (!userContainer) { return; }
+        var newUserSelectHasValue = false;
         var newUserWithInputs = document.createElement('DIV');
         var newUserSelect     = document.createElement('SELECT');
         var newPercentInput   = document.createElement('INPUT');
@@ -49,23 +50,32 @@
         addClassToElem(newUserSelect    , 'userinput');
         addClassToElem(newPercentInput  , 'percentageinput');
 
+        // Set up new percent input with limitations for resolution and range
         newPercentInput.type        = 'number';
         newPercentInput.min         = '0';
         newPercentInput.max         = '100';
         newPercentInput.step        = '0.01';
         newPercentInput.placeholder = 'Percentage';
 
+        // Get all userids that have been selected already
         var existingUserIds = getSelectedOrUsedUsers(transactionId);
+        // Get all application users
         var users           = getAllUsers();
         for (var i = 0; i < users.length; i++) {
             var user = users[i];
-            // Don't add a user to the dropdown if they're already in another dropdown
-            if (isInList(user.Id, existingUserIds)) { continue; }
 
+            // Set up the new option with user info
             var newOption       = document.createElement('OPTION');
-            newOption.value     = user.Id;
             newOption.innerHTML = user.Name;
+            setValue(newOption, user.Id.toString());
             newUserSelect.appendChild(newOption);
+
+            // If the user isn't already used and the dropdown has no selected option,
+            // set the value to the user we just added
+            if (!isInList(user.Id, existingUserIds) && !newUserSelectHasValue) {
+                setValue(newUserSelect, user.Id.toString());
+                newUserSelectHasValue = true;
+            }
         }
         newUserSelect.setAttribute('onchange', 'onchangeUserSelect(' + transactionId.toString() + ')');
 
@@ -103,7 +113,7 @@
             var existingUser = existingUsers[i];
             user = existingUser.getElementsByClassName('userinput');
             if (user.length != 1) { continue; }
-            userIds.push(toInt(user[0].value));
+            userIds.push(toInt(getValue(user[0])));
         }
         return userIds;
     }
@@ -125,8 +135,9 @@
             var options = getElementChildren(currentSelect);
             for (var j = 0; j < options.length; j++) {
                 var option = options[j];
-                // We want to hide the option from the user if and only if the option is currently used elsewhere
-                if (currentSelect.value != option.value && isInList(toInt(option.value), existingUserIds)) {
+                // We want to hide the option from the user if the user is currently used elsewhere
+                // and the user we are inspecting is NOT already selected by this current dropdown
+                if (getValue(currentSelect) != getValue(option) && isInList(toInt(getValue(option)), existingUserIds)) {
                     hideElem(option);
                 } else {
                     showElem(option);
