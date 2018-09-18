@@ -41,7 +41,6 @@
     function onclickAddUser(transactionId) {
         var userContainer = getElement('transactionusers_' + transactionId.toString());
         if (!userContainer) { return; }
-        var existingUsers     = getElementChildren('transactionusers_' + transactionId.toString());
         var newUserWithInputs = document.createElement('DIV');
         var newUserSelect     = document.createElement('SELECT');
         var newPercentInput   = document.createElement('INPUT');
@@ -56,23 +55,8 @@
         newPercentInput.step        = '0.01';
         newPercentInput.placeholder = 'Percentage';
 
-        var existingUserIds = [];
-        // Get users that existed on page load
-        for (var i = 0; i < existingUsers.length; i++) {
-            var existingUser = existingUsers[i];
-            user = existingUser.getElementsByClassName('userlabel');
-            if (user.length != 1) { continue; }
-            existingUserIds.push(toInt(user[0].getAttribute('data-user')));
-        }
-        // Get users that were added after page load
-        for (var i = 0; i < existingUsers.length; i++) {
-            var existingUser = existingUsers[i];
-            user = existingUser.getElementsByClassName('userinput');
-            if (user.length != 1) { continue; }
-            existingUserIds.push(toInt(user[0].value));
-        }
-
-        var users = getAllUsers();
+        var existingUserIds = getSelectedOrUsedUsers(transactionId);
+        var users           = getAllUsers();
         for (var i = 0; i < users.length; i++) {
             var user = users[i];
             // Don't add a user to the dropdown if they're already in another dropdown
@@ -83,15 +67,71 @@
             newOption.innerHTML = user.Name;
             newUserSelect.appendChild(newOption);
         }
+        newUserSelect.setAttribute('onchange', 'onchangeUserSelect(' + transactionId.toString() + ')');
 
+        // Add all new elements to DOM
         newUserWithInputs.appendChild(newUserSelect);
         newUserWithInputs.appendChild(newPercentInput);
-
         userContainer.appendChild(newUserWithInputs);
+
+        // Update all the options that the user has
+        // (a new user was just added, so we want to remove that new user from their options)
+        onchangeUserSelect(transactionId);
+
+        // Change the add button from 'Add Involved Users' to just a '+'
+        var addButton       = getElement('transaction_' + transactionId.toString() + '_add_btn');
+        addButton.innerHTML = '+';
 
         // If we've selected all users, hide the add button
         if (users.length == existingUserIds.length + 1) {
             hide('transaction_' + transactionId + '_add_btn');
+        }
+    }
+
+    function getSelectedOrUsedUsers(transactionId) {
+        var existingUsers = getElementChildrenById('transactionusers_' + transactionId.toString());
+        var userIds = [];
+        // Get users that existed on page load
+        for (var i = 0; i < existingUsers.length; i++) {
+            var existingUser = existingUsers[i];
+            user = existingUser.getElementsByClassName('userlabel');
+            if (user.length != 1) { continue; }
+            userIds.push(toInt(user[0].getAttribute('data-user')));
+        }
+        // Get users that were added after page load
+        for (var i = 0; i < existingUsers.length; i++) {
+            var existingUser = existingUsers[i];
+            user = existingUser.getElementsByClassName('userinput');
+            if (user.length != 1) { continue; }
+            userIds.push(toInt(user[0].value));
+        }
+        return userIds;
+    }
+
+    function onchangeUserSelect(transactionId) {
+        // Get all users that are selected or populated
+        var existingUserIds = getSelectedOrUsedUsers(transactionId);
+        var existingUsers   = getElementChildrenById('transactionusers_' + transactionId.toString());
+
+        // Loop over users that were added after page load
+        for (var i = 0; i < existingUsers.length; i++) {
+            var existingUser  = existingUsers[i];
+            var currentSelect = existingUser.getElementsByClassName('userinput');
+            if (currentSelect.length != 1) { continue; }
+
+            // Process the current select
+            currentSelect = currentSelect[0];
+            // Get the options for the select
+            var options = getElementChildren(currentSelect);
+            for (var j = 0; j < options.length; j++) {
+                var option = options[j];
+                // We want to hide the option from the user if and only if the option is currently used elsewhere
+                if (currentSelect.value != option.value && isInList(toInt(option.value), existingUserIds)) {
+                    hideElem(option);
+                } else {
+                    showElem(option);
+                }
+            }
         }
     }
 </script>

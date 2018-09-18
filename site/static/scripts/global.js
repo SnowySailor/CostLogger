@@ -19,8 +19,13 @@ function toInt(v, d) {
     return n;
 }
 
-function getElementChildren(id) {
+function getElementChildrenById(id) {
     var e = getElement(id);
+    if (!e) { return []; }
+    return e.children;
+}
+
+function getElementChildren(e) {
     if (!e) { return []; }
     return e.children;
 }
@@ -126,11 +131,20 @@ function showError(text) {
 }
 
 function show(id) {
-    removeClass(id, 'hidden');
+    var e = getElement(id);
+    removeClassFromElem(e, 'hidden');
+}
+
+function showElem(e) {
+    removeClassFromElem(e, 'hidden')
 }
 
 function hide(id) {
     addClass(id, 'hidden');
+}
+
+function hideElem(e) {
+    addClassToElem(e, 'hidden');
 }
 
 function addClass(id, c) {
@@ -139,7 +153,7 @@ function addClass(id, c) {
 }
 
 function addClassToElem(e, c) {
-    var cl = null
+    var cl = [];
     if (e) {
         cl = e.classList;
     } else {
@@ -151,15 +165,15 @@ function addClassToElem(e, c) {
     cl.add(c);
 }
 
-function removeClass(id, c){
-    var e = getElement(id);
+function removeClassFromElem(e, c){
+    var cl = [];
     if(e) {
-        e = e.classList
+        cl = e.classList
     } else {
         return;
     }
-    if (e.contains(c)) {
-        e.remove(c);
+    if (cl.contains(c)) {
+        cl.remove(c);
     }
 }
 
