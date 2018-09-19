@@ -12,6 +12,14 @@ import (
     "strconv"
 )
 
+func toMinimalUsers(users []User) []MinimalUser {
+    var minimalUsers []MinimalUser
+    for _, user := range users {
+        minimalUsers = append(minimalUsers, MinimalUser{Id: user.Id, Username: user.Username, DisplayName: user.DisplayName})
+    }
+    return minimalUsers
+}
+
 func (f flint) FlintToString(baseOffset int, decimalPlaces int) string {
     strVal := strconv.Itoa(int(f))
     major  := ""

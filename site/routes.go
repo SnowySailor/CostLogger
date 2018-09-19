@@ -24,6 +24,8 @@ func routeRequest(resp http.ResponseWriter, req *http.Request) {
             getLogin(ctx)
         } else if mainRoute == "logout" {
             postLogout(ctx)
+        } else if mainRoute == "users" {
+            getUsers(ctx)
         } else if mainRoute == "static" {
             // Try to serve a static file
             serveFile(ctx)

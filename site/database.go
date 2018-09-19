@@ -54,6 +54,32 @@ func (ctx *RequestContext) getUserBy(field string, value interface{}) (User, err
     return user, err
 }
 
+func (ctx RequestContext) getAllUsers() ([]User, error) {
+    var users []User
+
+    query     := "select id, username, display_name, email, password_hash from app_user"
+    rows, err := ctx.database.Query(query)
+
+    if err != nil {
+        return users, err
+    }
+
+    defer rows.Close()
+    for rows.Next() {
+        var user User
+        err := rows.Scan(&user.Id, &user.Username, &user.DisplayName, &user.Email, &user.PasswordHash)
+        if err != nil {
+            return users, err
+        }
+        users = append(users, user)
+    }
+    err = rows.Err()
+    if err != nil {
+        return users, err
+    }
+    return users, nil
+}
+
 // Insert a new user into the database
 func (ctx *RequestContext) insertUser(user User) (int, error) {
     var userId int

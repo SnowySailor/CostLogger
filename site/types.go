@@ -79,6 +79,8 @@ type HeaderData struct {
 
 type FeedData struct {
     Transactions []Transaction
+    UsersJSON    string
+    UserCount    int
 }
 
 // Application data types
@@ -88,6 +90,12 @@ type User struct {
     DisplayName  string
     Email        string
     PasswordHash string
+}
+
+type MinimalUser struct {
+    Id          int
+    Username    string
+    DisplayName string
 }
 
 type Transaction struct {

@@ -11,6 +11,9 @@
         <script type="text/javascript" src="{{.Url}}"></script>
     {{end}}
     </head>
+    <script type="text/javascript">
+        var G = {};
+    </script>
     <body>
         <div class="container">
             {{.Body}}

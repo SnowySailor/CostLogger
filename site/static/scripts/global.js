@@ -1,3 +1,32 @@
+function parseJSON(json, d) {
+    var resp;
+    try {
+        resp = JSON.parse(json);
+    } catch (e) {
+        return d || e;
+    }
+    return resp;
+}
+
+function httpGet(urlToGet, callback) {
+    var isAsync = callback ? true : false;
+    var xmlhttp = new XMLHttpRequest();
+    if (isAsync) {
+        xmlhttp.onreadystatechange = function() {
+            var resp = parseJSON(xmlhttp.responseText, {});
+            if (xmlhttp.readyState == 4 && isSuccess(xmlhttp.status)) {
+                showError();
+                callback(resp);
+            } else if (xmlhttp.readyState == 4 && isBadRequest(xmlhttp.status)) {
+                showError(resp.Message);
+            }
+        }
+    }
+    xmlhttp.open("GET", urlToGet, isAsync);
+    xmlhttp.send();
+    if (!isAsync) { return xmlhttp.responseText; }
+}
+
 function getValueById(id) {
     var e = getElement(id);
     if (e) { return e.value || ""; }
@@ -51,12 +80,10 @@ function getElementChildren(e) {
 }
 
 function getAllUsers() {
-    return [
-        {Id: 1, Name: 'Bob'},
-        {Id: 2, Name: 'Andy'},
-        {Id: 3, Name: 'Alice'},
-        {Id: 4, Name: 'Jimothy'}
-    ];
+    if (G.AllUsers) {
+        return G.AllUsers;
+    }
+    return httpGet('users');
 }
 
 function getElement(id) {
@@ -116,9 +143,7 @@ function httpPost(urlToPost, data, callback) {
     var xmlhttp = new XMLHttpRequest();
     if (isAsync) {
         xmlhttp.onreadystatechange = function() {
-            var resp = {};
-            try { resp = JSON.parse(xmlhttp.responseText); }
-            catch { }
+            var resp = parseJSON(xmlhttp.responseText, {});
             if (xmlhttp.readyState == 4 && isSuccess(xmlhttp.status)) {
                 showError();
                 callback(resp);

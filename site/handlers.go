@@ -43,12 +43,29 @@ func getTransaction(ctx RequestContext) {
 }
 
 func (ctx *RequestContext) getFeedHtml() (string, error) {
+    // Get all transactions
     transactions, err := ctx.getUserTransactions(ctx.userId)
     if err != nil {
         println(err.Error())
         return "", err
     }
-    feedData := FeedData{Transactions:transactions,}
+
+    // Get all users
+    users, err := ctx.getAllUsers()
+    if err != nil {
+        println(err.Error())
+        return "", err
+    }
+
+    // Convert users to json
+    minimalJSON, err := marshalJSON(toMinimalUsers(users))
+    if err != nil {
+        println(err.Error())
+        return "", err
+    }
+
+    // Construct feed data and feed it to templates
+    feedData := FeedData{Transactions:transactions, UsersJSON:minimalJSON, UserCount:len(users)}
     feed, err := makeHtml("../templates/feed.template", feedData)
     if err != nil {
         return "", err
@@ -85,6 +102,34 @@ func getLogout(ctx RequestContext) {
         ctx.logoutUser()
     }
     ctx.redirect("login")
+}
+
+func getUsers(ctx RequestContext) {
+    response := makeJSONResponse("")
+    if !ctx.isUserLoggedIn() {
+        response.Message = "Not authorized"
+        ctx.notAuthorizedJSON(response)
+        return
+    }
+
+    // Get all users
+    users, err     := ctx.getAllUsers()
+    if err != nil {
+        ctx.internalErrorJSON()
+        return
+    }
+    minimalUsers := toMinimalUsers(users)
+
+    // Convert users to JSON
+    usersJSON, err := marshalJSON(minimalUsers)
+    if err != nil {
+        ctx.internalErrorJSON()
+        return
+    }
+
+    // Return users
+    response.Message = usersJSON
+    ctx.successJSON(response)
 }
 
 func postTransaction(ctx RequestContext) {

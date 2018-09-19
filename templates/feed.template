@@ -14,6 +14,7 @@
     background-color:#777;
 }
 </style>
+<div class="hidden" id="all_users" data-user-json="{{.UsersJSON}}"></div>
 <div id="transactionlist" class="transactionlist">
     {{range .Transactions}}
     <div class="transactioncontainer">
@@ -29,15 +30,22 @@
             </div>
             {{end}}
         </div>
-        {{if .InvolvedUsers}}
-        <button type="button" id="transaction_{{.Id}}_add_btn" onclick="onclickAddUser({{.Id}})">+</button>
-        {{else}}
-        <button type="button" id="transaction_{{.Id}}_add_btn" onclick="onclickAddUser({{.Id}})">Add Involved Users</button>
+        {{if not (eq (len .InvolvedUsers) $.UserCount)}}
+            {{if .InvolvedUsers}}
+            <button type="button" id="transaction_{{.Id}}_add_btn" onclick="onclickAddUser({{.Id}})">+</button>
+            {{else}}
+            <button type="button" id="transaction_{{.Id}}_add_btn" onclick="onclickAddUser({{.Id}})">Add Involved Users</button>
+            {{end}}
         {{end}}
     </div>
     {{end}}
 </div>
 <script type="text/javascript">
+    window.addEventListener('load', loadAllUsers());
+    function loadAllUsers() {
+        G.AllUsers = parseJSON(getElement('all_users').getAttribute('data-user-json'), []);
+    }
+
     function onclickAddUser(transactionId) {
         var userContainer = getElement('transactionusers_' + transactionId.toString());
         if (!userContainer) { return; }
@@ -66,7 +74,7 @@
 
             // Set up the new option with user info
             var newOption       = document.createElement('OPTION');
-            newOption.innerHTML = user.Name;
+            newOption.innerHTML = user.DisplayName;
             setValue(newOption, user.Id.toString());
             newUserSelect.appendChild(newOption);
 

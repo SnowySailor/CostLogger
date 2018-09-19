@@ -55,6 +55,23 @@ func (ctx RequestContext) badRequestJSON(resp JSONResponse) {
     ctx.writeResponse(msg, 400, "application/json")
 }
 
+func (ctx RequestContext) internalErrorJSON() {
+    response := makeJSONResponse("Internal server error")
+    msg, err := marshalJSON(response)
+    if err != nil {
+        panic(err)
+    }
+    ctx.writeResponse(msg, 500, "application/json")
+}
+
+func (ctx RequestContext) notAuthorizedJSON(resp JSONResponse) {
+    msg, err := marshalJSON(resp)
+    if err != nil {
+        panic(err)
+    }
+    ctx.writeResponse(msg, 403, "application/json")
+}
+
 // Redirection writers 
 
 func (ctx RequestContext) redirect(loc string) {
