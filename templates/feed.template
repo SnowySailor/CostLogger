@@ -33,16 +33,20 @@
 }
 </style>
 <div class="hidden" id="all_users" data-user-json="{{.UsersJSON}}"></div>
+<div class="feedheader">
+    <h2>Transactions</h2>
+    <button type="button" onclick="onclickAddTransaction()">Add Transaction</button>
+</div>
 <div id="transactionlist" class="transactionlist">
     {{range .Transactions}}
     <div class="transactioncontainer" id="transaction_container_{{.Id}}">
         <div class="deletebtncontainer"><button onclick="onclickDeleteTransaction({{.Id}})" class="actionbtn">x</button></div>
         <div class="actionbtncontainer"><button onclick="onclickEditTransaction({{.Id}})" class="actionbtn">e</button></div>
         <div class="userlabel">User: {{.UserId}}</div>
-        <div class="amountlabel">Amount: ${{.Amount.FlintToString 2 2}}</div>
-        {{if .Comments}}
-        <div class="commentslabel">Comments: {{.Comments}}</div>
-        {{end}}
+        <div id="transaction_{{.Id}}_fields_container">
+            <div data-amount="{{.Amount}}" class="amountlabel">Amount: ${{.Amount.FlintToString 2 2}}</div>
+            <div data-comments="{{.Comments}}" class="commentslabel">Comments: {{if .Comments}}{{.Comments}}{{else}}(none){{end}}</div>
+        </div>
         <div class="transactionuserscontainer" id="transactionusers_{{.Id}}">
             {{if .InvolvedUsers}}
             <div class="actionbtncontainer"><button onclick="onclickEditInvolvedUsers({{.Id}})" class="actionbtn">e</button></div>
@@ -203,12 +207,44 @@
         var c = confirm('Are you sure you want to delete this transaction?');
         // TODO: call delete transaction
         if (c) {
-            hide('transaction_container_' + transactionId.toString());
+            var transaction = getElement('transaction_container_' + transactionId.toString());
+            removeElement(transaction);
         }
     }
 
     function onclickEditTransaction(transactionId) {
-        return;
+        var transactionContainer = getElement('transaction_' + transactionId.toString() + '_fields_container');
+        var containerChildren    = getElementChildren(transactionContainer);
+
+        var amount   = '';
+        var comments = '';
+
+        for (var i = 0; i < containerChildren.length; i++) {
+            var child = containerChildren[i];
+            if (child.hasAttribute('data-amount')) {
+                amount = child.getAttribute('data-amount');
+            }
+            if (child.hasAttribute('data-comments')) {
+                comments = child.getAttribute('data-comments');
+            }
+        }
+
+        var amountInput   = document.createElement('INPUT');
+        var commentsInput = document.createElement('INPUT');
+
+        amountInput.type        = 'number';
+        amountInput.min         = '0';
+        amountInput.step        = '0.01';
+        amountInput.placeholder = 'Amount';
+        setValue(amountInput, (amount/100).toFixed(2));
+
+        commentsInput.type = 'text';
+        commentsInput.placeholder = 'Comments';
+        setValue(commentsInput, comments);
+
+        removeAllChildren(transactionContainer);
+        transactionContainer.appendChild(amountInput);
+        transactionContainer.appendChild(commentsInput);
     }
 
     function onclickEditInvolvedUsers(transactionId) {
@@ -252,5 +288,78 @@
         } else {
             show('transaction_' + transactionId.toString() + '_add_btn')
         }
+    }
+
+    function onclickAddTransaction() {
+        var transactionList      = getElement('transactionlist');
+        if (!transactionList) { return; }
+
+        var transactionId        = randomInt(0, 1000000);
+        var transactionContainer = document.createElement('DIV');
+        var userLabel            = document.createElement('DIV');
+        var inputsContainer      = document.createElement('DIV');
+        var amountInput          = document.createElement('INPUT');
+        var commentsInput        = document.createElement('INPUT');
+        var involvedUsersLabel   = document.createElement('DIV');
+        var transactionUsers     = document.createElement('DIV');
+        var transactionUsersList = document.createElement('DIV');
+        var addUsersButton       = document.createElement('BUTTON');
+        var saveButtonContainer  = document.createElement('DIV');
+        var saveButton           = document.createElement('BUTTON');
+
+        userLabel.innerHTML = 'User: Me';
+
+        inputsContainer.id = 'transaction_' + transactionId.toString() + '_fields_container';
+
+        amountInput.type        = 'number';
+        amountInput.min         = '0';
+        amountInput.step        = '0.01';
+        amountInput.placeholder = 'Amount';
+
+        commentsInput.type        = 'text';
+        commentsInput.placeholder = 'Comments';
+
+        involvedUsersLabel.innerHTML = 'Involved Users';
+
+        transactionUsers.id     = 'transactionusers_' + transactionId.toString();
+        transactionUsersList.id = 'transactionuserslist_' + transactionId.toString();
+
+        addUsersButton.type      = 'button';
+        addUsersButton.innerHTML = 'Add Involved Users';
+        addUsersButton.id        = 'transaction_' + transactionId.toString() + '_add_btn';
+        addUsersButton.setAttribute('onclick', 'onclickAddUser(' + transactionId.toString() + ')');
+
+        saveButtonContainer.id = 'transaction_' + transactionId.toString() + '_action_btn_container';
+
+        saveButton.type = 'button';
+        saveButton.innerHTML = 's';
+        saveButton.id = 'transaction_' + transactionId.toString() + '_action_btn';
+        saveButton.setAttribute('onclick', 'onclickSaveTransaction(' + transactionId + ')');
+
+        addClassToElem(transactionContainer, 'transactioncontainer');
+        addClassToElem(involvedUsersLabel  , 'involveduserslabel');
+        addClassToElem(transactionUsers    , 'transactionuserscontainer');
+        addClassToElem(saveButton          , 'actionbtn');
+        addClassToElem(saveButtonContainer , 'actionbtncontainer');
+        addClassToElem(userLabel           , 'userlabel');
+
+        saveButtonContainer.appendChild(saveButton);
+        transactionUsers.appendChild(transactionUsersList);
+
+        inputsContainer.appendChild(amountInput);
+        inputsContainer.appendChild(commentsInput);
+
+        transactionContainer.appendChild(saveButtonContainer);
+        transactionContainer.appendChild(userLabel);
+        transactionContainer.appendChild(inputsContainer);
+        transactionContainer.appendChild(involvedUsersLabel);
+        transactionContainer.appendChild(transactionUsers);
+        transactionContainer.appendChild(addUsersButton);
+
+        transactionList.appendChild(transactionContainer);
+    }
+
+    function onclickSaveTransaction(transactionId) {
+        return;
     }
 </script>

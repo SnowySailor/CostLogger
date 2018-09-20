@@ -2,7 +2,7 @@ function removeAllChildren(e) {
     if (!e) { return; }
     var children = getAllChildren(e);
     for (var i = 0; i < children.length; i++) {
-        e.removeChild(children[i]);
+        removeElement(children[i]);
     }
 }
 
