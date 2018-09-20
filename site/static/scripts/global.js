@@ -1,3 +1,17 @@
+function removeAllChildren(e) {
+    if (!e) { return; }
+    var children = getAllChildren(e);
+    for (var i = 0; i < children.length; i++) {
+        e.removeChild(children[i]);
+    }
+}
+
+function removeElement(e) {
+    if (e && e.parentNode) {
+        e.parentNode.removeChild(e);
+    }
+}
+
 function parseJSON(json, d) {
     var resp;
     try {

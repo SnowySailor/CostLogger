@@ -130,9 +130,14 @@ func (ctx *RequestContext) insertTransaction(transaction Transaction) (int, erro
     row     := ctx.database.QueryRow(query, transaction.Amount, transaction.Comments, transaction.UserId)
     err     = row.Scan(&transactionId)
 
+    // Overwrite all transaction ids of the involved users with the new id
+    for i, _ := range transaction.InvolvedUsers {
+        transaction.InvolvedUsers[i].TransactionId = transactionId
+    }
+
     // Insert all involved users
-    for i := 0; i < len(transaction.InvolvedUsers); i = i+1 {
-        err = ctx.insertTransactionUser(transaction.InvolvedUsers[i])
+    for _, user := range transaction.InvolvedUsers {
+        err = ctx.insertTransactionUser(user)
         if err != nil {
             err = tx.Rollback()
             if err != nil {

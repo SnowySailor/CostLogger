@@ -62,6 +62,7 @@ i.downarrow {
 
 .topbar {
     width: 100%;
+    min-height:75px;
     background-color: #aaa;
     flex: 0 1 75px;
     display: -webkit-box;

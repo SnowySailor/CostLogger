@@ -24,11 +24,13 @@
         var commentsInput        = document.createElement('INPUT');
         var involvedUsersLabel   = document.createElement('DIV');
         var transactionUsers     = document.createElement('DIV');
+        var transactionUsersList = document.createElement('DIV');
         var addUsersButton       = document.createElement('BUTTON');
+        var saveButtonContainer  = document.createElement('DIV');
+        var saveButton           = document.createElement('BUTTON');
 
         amountInput.type        = 'number';
         amountInput.min         = '0';
-        amountInput.max         = '100';
         amountInput.step        = '0.01';
         amountInput.placeholder = 'Amount';
 
@@ -37,23 +39,41 @@
 
         involvedUsersLabel.innerHTML = 'Involved Users';
 
-        transactionUsers.id = 'transactionusers_' + transactionId.toString();
+        transactionUsers.id     = 'transactionusers_' + transactionId.toString();
+        transactionUsersList.id = 'transactionuserslist_' + transactionId.toString();
 
         addUsersButton.type      = 'button';
         addUsersButton.innerHTML = 'Add Involved Users';
         addUsersButton.id        = 'transaction_' + transactionId.toString() + '_add_btn';
         addUsersButton.setAttribute('onclick', 'onclickAddUser(' + transactionId.toString() + ')');
 
+        saveButtonContainer.id = 'transaction_' + transactionId.toString() + '_action_btn_container';
+
+        saveButton.type = 'button';
+        saveButton.innerHTML = 's';
+        saveButton.id = 'transaction_' + transactionId.toString() + '_action_btn';
+        saveButton.setAttribute('onclick', 'onclickSaveTransaction(' + transactionId + ')');
+
         addClassToElem(transactionContainer, 'transactioncontainer');
         addClassToElem(involvedUsersLabel  , 'involveduserslabel');
         addClassToElem(transactionUsers    , 'transactionuserscontainer');
+        addClassToElem(saveButton          , 'actionbtn');
+        addClassToElem(saveButtonContainer , 'actionbtncontainer');
+
+        saveButtonContainer.appendChild(saveButton);
+        transactionUsers.appendChild(transactionUsersList);
 
         transactionContainer.appendChild(amountInput);
+        transactionContainer.appendChild(saveButtonContainer);
         transactionContainer.appendChild(commentsInput);
         transactionContainer.appendChild(involvedUsersLabel);
         transactionContainer.appendChild(transactionUsers);
         transactionContainer.appendChild(addUsersButton);
 
         transactionList.appendChild(transactionContainer);
+    }
+
+    function onclickSaveTransaction(transactionId) {
+        return;
     }
 </script>

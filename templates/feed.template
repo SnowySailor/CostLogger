@@ -13,30 +13,55 @@
 .transactionuserscontainer {
     background-color:#777;
 }
+
+.userlabel, .involveduserslabel {
+    display:inline-block;
+}
+
+.deletebtncontainer, .actionbtncontainer {
+    display:inline-block;
+    float:right;
+}
+
+.actionbtn {
+    width:30px;
+    height:30px;
+    font-weight:bolder;
+    border-radius:15px;
+    border:none;
+    margin-right:5px;
+}
 </style>
 <div class="hidden" id="all_users" data-user-json="{{.UsersJSON}}"></div>
 <div id="transactionlist" class="transactionlist">
     {{range .Transactions}}
-    <div class="transactioncontainer">
+    <div class="transactioncontainer" id="transaction_container_{{.Id}}">
+        <div class="deletebtncontainer"><button onclick="onclickDeleteTransaction({{.Id}})" class="actionbtn">x</button></div>
+        <div class="actionbtncontainer"><button onclick="onclickEditTransaction({{.Id}})" class="actionbtn">e</button></div>
         <div class="userlabel">User: {{.UserId}}</div>
         <div class="amountlabel">Amount: ${{.Amount.FlintToString 2 2}}</div>
-        {{if .Comments}}<div class="commentslabel">Comments: {{.Comments}}</div>{{end}}
-        <div class="involveduserslabel">Involved Users</div>
-        <div class="transactionuserscontainer" id="transactionusers_{{.Id}}">
-            {{range .InvolvedUsers}}
-            <div class="transactionuser">
-                <div data-user="{{.UserId}}" class="userlabel">User: {{.UserId}}</div>
-                <div class="percentagelabel">Percentage: {{.PercentInvolvement.FlintToString 2 2}}%%</div>
-            </div>
-            {{end}}
-        </div>
-        {{if not (eq (len .InvolvedUsers) $.UserCount)}}
-            {{if .InvolvedUsers}}
-            <button type="button" id="transaction_{{.Id}}_add_btn" onclick="onclickAddUser({{.Id}})">+</button>
-            {{else}}
-            <button type="button" id="transaction_{{.Id}}_add_btn" onclick="onclickAddUser({{.Id}})">Add Involved Users</button>
-            {{end}}
+        {{if .Comments}}
+        <div class="commentslabel">Comments: {{.Comments}}</div>
         {{end}}
+        <div class="transactionuserscontainer" id="transactionusers_{{.Id}}">
+            {{if .InvolvedUsers}}
+            <div class="actionbtncontainer"><button onclick="onclickEditInvolvedUsers({{.Id}})" class="actionbtn">e</button></div>
+            {{end}}
+            <div class="involveduserslabel">Involved Users</div>
+            <div id="transactionuserslist_{{.Id}}">
+                {{range .InvolvedUsers}}
+                <div class="transactionuser">
+                    <div data-user="{{.UserId}}" class="userlabel">User: {{.UserId}}</div>
+                    <div data-percentage="{{.PercentInvolvement}}" class="percentagelabel">Percentage: {{.PercentInvolvement.FlintToString 2 2}}%%</div>
+                </div>
+                {{end}}
+            </div>
+            <div id="transaction_{{.Id}}_add_btn_container">
+                {{if not .InvolvedUsers}}
+                <button type="button" id="transaction_{{.Id}}_add_btn" onclick="onclickAddUser({{.Id}})">Add Involved Users</button>
+                {{end}}
+            </div>
+        </div>
     </div>
     {{end}}
 </div>
@@ -46,17 +71,17 @@
         G.AllUsers = parseJSON(getElement('all_users').getAttribute('data-user-json'), []);
     }
 
-    function onclickAddUser(transactionId) {
-        var userContainer = getElement('transactionusers_' + transactionId.toString());
-        if (!userContainer) { return; }
+    function makeUserWithInputs(transactionId, userValue, percentValue) {
         var newUserSelectHasValue = false;
         var newUserWithInputs = document.createElement('DIV');
         var newUserSelect     = document.createElement('SELECT');
         var newPercentInput   = document.createElement('INPUT');
+        var deleteButton      = document.createElement('BUTTON');
 
         addClassToElem(newUserWithInputs, 'transactionuser');
         addClassToElem(newUserSelect    , 'userinput');
         addClassToElem(newPercentInput  , 'percentageinput');
+        addClassToElem(deleteButton     , 'userdeletebtn');
 
         // Set up new percent input with limitations for resolution and range
         newPercentInput.type        = 'number';
@@ -64,6 +89,11 @@
         newPercentInput.max         = '100';
         newPercentInput.step        = '0.01';
         newPercentInput.placeholder = 'Percentage';
+        if (percentValue) { setValue(newPercentInput, percentValue) }
+
+        deleteButton.type      = 'button';
+        deleteButton.innerHTML = 'x'
+        deleteButton.setAttribute('onclick', 'onclickDeleteTransactionUser(' + transactionId.toString() + ',event)');
 
         // Get all userids that have been selected already
         var existingUserIds = getSelectedOrUsedUsers(transactionId);
@@ -80,7 +110,7 @@
 
             // If the user isn't already used and the dropdown has no selected option,
             // set the value to the user we just added
-            if (!isInList(user.Id, existingUserIds) && !newUserSelectHasValue) {
+            if ((userValue && userValue == user.Id) || (!isInList(user.Id, existingUserIds) && !newUserSelectHasValue)) {
                 setValue(newUserSelect, user.Id.toString());
                 newUserSelectHasValue = true;
             }
@@ -90,6 +120,16 @@
         // Add all new elements to DOM
         newUserWithInputs.appendChild(newUserSelect);
         newUserWithInputs.appendChild(newPercentInput);
+        newUserWithInputs.appendChild(deleteButton);
+
+        return newUserWithInputs;
+    }
+
+    function onclickAddUser(transactionId) {
+        var userContainer = getElement('transactionuserslist_' + transactionId.toString());
+        if (!userContainer) { return; }
+
+        var newUserWithInputs = makeUserWithInputs(transactionId);
         userContainer.appendChild(newUserWithInputs);
 
         // Update all the options that the user has
@@ -101,13 +141,18 @@
         addButton.innerHTML = '+';
 
         // If we've selected all users, hide the add button
-        if (users.length == existingUserIds.length + 1) {
-            hide('transaction_' + transactionId + '_add_btn');
-        }
+        showAddUserButtonIfNeeded(transactionId);
+    }
+
+    function onclickDeleteTransactionUser(transactionId, event) {
+        if (!event.currentTarget || !event.currentTarget.parentElement) { return; }
+        removeElement(event.currentTarget.parentElement);
+        onchangeUserSelect(transactionId);
+        showAddUserButtonIfNeeded(transactionId);
     }
 
     function getSelectedOrUsedUsers(transactionId) {
-        var existingUsers = getElementChildrenById('transactionusers_' + transactionId.toString());
+        var existingUsers = getElementChildrenById('transactionuserslist_' + transactionId.toString());
         var userIds = [];
         // Get users that existed on page load
         for (var i = 0; i < existingUsers.length; i++) {
@@ -129,7 +174,7 @@
     function onchangeUserSelect(transactionId) {
         // Get all users that are selected or populated
         var existingUserIds = getSelectedOrUsedUsers(transactionId);
-        var existingUsers   = getElementChildrenById('transactionusers_' + transactionId.toString());
+        var existingUsers   = getElementChildrenById('transactionuserslist_' + transactionId.toString());
 
         // Loop over users that were added after page load
         for (var i = 0; i < existingUsers.length; i++) {
@@ -151,6 +196,61 @@
                     showElem(option);
                 }
             }
+        }
+    }
+
+    function onclickDeleteTransaction(transactionId) {
+        var c = confirm('Are you sure you want to delete this transaction?');
+        // TODO: call delete transaction
+        if (c) {
+            hide('transaction_container_' + transactionId.toString());
+        }
+    }
+
+    function onclickEditTransaction(transactionId) {
+        return;
+    }
+
+    function onclickEditInvolvedUsers(transactionId) {
+        var listToConvert = getElement('transactionuserslist_' + transactionId.toString());
+
+        var usersToPut  = [];
+        var usersToEdit = getElementChildren(listToConvert);
+        for (var i = 0; i < usersToEdit.length; i++) {
+            var user       = usersToEdit[i];
+            var userId     = user.getAttribute('data-user');
+            var percentage = user.getAttribute('data-percentage');
+            var userToPut  = makeUserWithInputs(transactionId, userId, percentage);
+
+            usersToPut.push(userToPut);
+            removeElement(user);
+        }
+
+        for (var i = 0; i < usersToPut.length; i++) {
+            listToConvert.appendChild(usersToPut[i]);
+        }
+
+        var addButtonContainer = getElement('transaction_' + transactionId.toString() + '_add_btn_container');
+        if (!addButtonContainer) { return; }
+
+        var addButton       = document.createElement('BUTTON');
+        addButton.type      = 'button';
+        addButton.id        = 'transaction_' + transactionId.toString() + '_add_btn';
+        addButton.innerHTML = '+';
+        addButton.setAttribute('onclick', 'onclickAddUser(' + transactionId.toString() + ')');
+
+        addButtonContainer.appendChild(addButton);
+
+        showAddUserButtonIfNeeded(transactionId);
+    }
+
+    function showAddUserButtonIfNeeded(transactionId) {
+        var users         = getAllUsers();
+        var existingUsers = getSelectedOrUsedUsers(transactionId);
+        if (existingUsers.length >= users.length) {
+            hide('transaction_' + transactionId.toString() + '_add_btn');
+        } else {
+            show('transaction_' + transactionId.toString() + '_add_btn')
         }
     }
 </script>
