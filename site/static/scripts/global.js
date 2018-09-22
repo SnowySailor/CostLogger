@@ -1,3 +1,8 @@
+function removeCharacter(s, c) {
+    if (!s) { return ''; }
+    return s.replace(c, '');
+}
+
 function removeAllChildren(e) {
     if (!e) { return; }
     var children = getAllChildren(e);
@@ -43,8 +48,7 @@ function httpGet(urlToGet, callback) {
 
 function getValueById(id) {
     var e = getElement(id);
-    if (e) { return e.value || ""; }
-    return "";
+    return getValue(e);
 }
 
 function getValue(e) {
@@ -54,11 +58,20 @@ function getValue(e) {
 
 function setValueById(id, v) {
     var e = getElement(id);
-    if (e) { e.value = v; }
+    setValue(e, v);
 }
 
 function setValue(e, v) {
     if (e) { e.value = v; }
+}
+
+function setInnerHTMLById(id, v) {
+    var e = getElement(id);
+    setInnerHTML(e, v);
+}
+
+function setInnerHTML(e, v) {
+    if (e) { e.innerHTML = v; }
 }
 
 function randomInt(min, max) {
@@ -234,6 +247,12 @@ function removeClassFromElem(e, c){
     if (cl.contains(c)) {
         cl.remove(c);
     }
+}
+
+function hasClass(e, c) {
+    if (!e) { return false; }
+    var cl = e.classList;
+    return cl.contains(c);
 }
 
 function setInnerHtml(id, v){

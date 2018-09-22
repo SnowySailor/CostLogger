@@ -41,18 +41,18 @@
     {{range .Transactions}}
     <div class="transactioncontainer" id="transaction_container_{{.Id}}">
         <div class="deletebtncontainer"><button onclick="onclickDeleteTransaction({{.Id}})" class="actionbtn">x</button></div>
-        <div class="actionbtncontainer"><button onclick="onclickEditTransaction({{.Id}})" class="actionbtn">e</button></div>
+        <div class="actionbtncontainer"><button id="transaction_{{.Id}}_action_btn" onclick="onclickEditTransaction({{.Id}})" class="actionbtn">e</button></div>
         <div class="userlabel">User: {{.UserId}}</div>
         <div id="transaction_{{.Id}}_fields_container">
-            <div data-amount="{{.Amount}}" class="amountlabel">Amount: ${{.Amount.FlintToString 2 2}}</div>
-            <div data-comments="{{.Comments}}" class="commentslabel">Comments: {{if .Comments}}{{.Comments}}{{else}}(none){{end}}</div>
+            <div id="transaction_{{.Id}}_amount" data-amount="{{.Amount}}" class="amountlabel">Amount: ${{.Amount.FlintToString 2 2}}</div>
+            <div id="transaction_{{.Id}}_comments" data-comments="{{.Comments}}" class="commentslabel">Comments: {{if .Comments}}{{.Comments}}{{else}}(none){{end}}</div>
         </div>
-        <div class="transactionuserscontainer" id="transactionusers_{{.Id}}">
+        <div class="transactionuserscontainer" id="transaction_{{.Id}}_users_container">
             {{if .InvolvedUsers}}
             <div class="actionbtncontainer"><button onclick="onclickEditInvolvedUsers({{.Id}})" class="actionbtn">e</button></div>
             {{end}}
             <div class="involveduserslabel">Involved Users</div>
-            <div id="transactionuserslist_{{.Id}}">
+            <div id="transaction_{{.Id}}_users_list">
                 {{range .InvolvedUsers}}
                 <div class="transactionuser">
                     <div data-user="{{.UserId}}" class="userlabel">User: {{.UserId}}</div>
@@ -73,6 +73,77 @@
     window.addEventListener('load', loadAllUsers());
     function loadAllUsers() {
         G.AllUsers = parseJSON(getElement('all_users').getAttribute('data-user-json'), []);
+    }
+
+    function getTransactionFromInputs(transactionId) {
+        var userListContainer = getElement('transaction_' + transactionId.toString() + '_users_list');
+        var transaction = {};
+        var amount      = 0;
+        var comments    = '';
+
+        // Get the amount
+        var amountInput = getElement('transaction_' + transactionId.toString() + '_amount');
+        if (!amountInput) { return; }
+        if (hasClass(amountInput, 'amountlabel')) {
+            amount = amountInput.getAttribute('data-amount');
+        } else if (hasClass(amountInput, 'amountinput')) {
+            amount = getValue(amountInput);
+        }
+
+        // Get the comments
+        var commentsInput = getElement('transaction_' + transactionId.toString() + '_comments');
+        if (!commentsInput) { return; }
+        if (hasClass(commentsInput, 'commentslabel')) {
+            comments = commentsInput.getAttribute('data-comments');
+        } else if (hasClass(commentsInput, 'commentsinput')) {
+            comments = getValue(commentsInput);
+        }
+
+        // Get the users
+        var userList = [];
+        var userListElements = getElementChildren(userListContainer);
+        for (var i = 0; i < userListElements.length; i++) {
+            var userToAdd    = {};
+            var user         = userListElements[i];
+            var userChildren = getElementChildren(user);
+            var percent      = 0;
+            var userid       = 0
+
+            for (var j = 0; j < userChildren.length; j++) {
+                var userChild = userChildren[j];
+                if (hasClass(userChild, 'userinput')) {
+                    userid = getValue(userChild);
+                } else if (hasClass(userChild, 'percentageinput')) {
+                    percent = getValue(userChild);
+                } else if (hasClass(userChild, 'userlabel')) {
+                    userid = userChild.getAttribute('data-user');
+                } else if (hasClass(userChild, 'percentagelabel')) {
+                    percent = userChild.getAttribute('data-percentage');
+                }
+            }
+
+            userToAdd.UserId             = toInt(userid);
+            userToAdd.PercentInvolvement = toInt(removeCharacter(percent, '.'));
+
+            userList.push(userToAdd);
+        }
+
+        for (var i = 0; i < userList.length; i++) {
+            var userToAdd = userList[i];
+            // Error checking
+            if (!userToAdd.UserId || !userToAdd.PercentInvolvement) {
+                // TODO: Error
+            }
+        }
+
+        if (!amount) {
+            // TODO: Error
+        }
+
+        transaction.Amount        = amount;
+        transaction.Comments      = comments;
+        transaction.InvolvedUsers = userList;
+        return transaction;
     }
 
     function makeUserWithInputs(transactionId, userValue, percentValue) {
@@ -130,7 +201,7 @@
     }
 
     function onclickAddUser(transactionId) {
-        var userContainer = getElement('transactionuserslist_' + transactionId.toString());
+        var userContainer = getElement('transaction_' + transactionId.toString() + '_users_list');
         if (!userContainer) { return; }
 
         var newUserWithInputs = makeUserWithInputs(transactionId);
@@ -156,7 +227,7 @@
     }
 
     function getSelectedOrUsedUsers(transactionId) {
-        var existingUsers = getElementChildrenById('transactionuserslist_' + transactionId.toString());
+        var existingUsers = getElementChildrenById('transaction_' + transactionId.toString() + '_users_list');
         var userIds = [];
         // Get users that existed on page load
         for (var i = 0; i < existingUsers.length; i++) {
@@ -178,7 +249,7 @@
     function onchangeUserSelect(transactionId) {
         // Get all users that are selected or populated
         var existingUserIds = getSelectedOrUsedUsers(transactionId);
-        var existingUsers   = getElementChildrenById('transactionuserslist_' + transactionId.toString());
+        var existingUsers   = getElementChildrenById('transaction_' + transactionId.toString() + '_users_list');
 
         // Loop over users that were added after page load
         for (var i = 0; i < existingUsers.length; i++) {
@@ -213,8 +284,9 @@
     }
 
     function onclickEditTransaction(transactionId) {
-        var transactionContainer = getElement('transaction_' + transactionId.toString() + '_fields_container');
-        var containerChildren    = getElementChildren(transactionContainer);
+        var transactionActionButton = getElement('transaction_' + transactionId.toString() + '_action_btn');
+        var transactionContainer    = getElement('transaction_' + transactionId.toString() + '_fields_container');
+        var containerChildren       = getElementChildren(transactionContainer);
 
         var amount   = '';
         var comments = '';
@@ -233,22 +305,30 @@
         var commentsInput = document.createElement('INPUT');
 
         amountInput.type        = 'number';
+        amountInput.id          = 'transaction_' + transactionId.toString() + '_amount';
         amountInput.min         = '0';
         amountInput.step        = '0.01';
         amountInput.placeholder = 'Amount';
         setValue(amountInput, (amount/100).toFixed(2));
 
-        commentsInput.type = 'text';
+        commentsInput.type        = 'text';
+        commentsInput.id          = 'transaction_' + transactionId.toString() + '_comments';
         commentsInput.placeholder = 'Comments';
         setValue(commentsInput, comments);
+
+        addClassToElem(amountInput  , 'amountinput');
+        addClassToElem(commentsInput, 'commentsinput');
 
         removeAllChildren(transactionContainer);
         transactionContainer.appendChild(amountInput);
         transactionContainer.appendChild(commentsInput);
+
+        setInnerHTML(transactionActionButton, 's');
+        transactionActionButton.setAttribute('onclick', 'onclickSaveTransaction(' + transactionId + ')');
     }
 
     function onclickEditInvolvedUsers(transactionId) {
-        var listToConvert = getElement('transactionuserslist_' + transactionId.toString());
+        var listToConvert = getElement('transaction_' + transactionId.toString() + '_users_list');
 
         var usersToPut  = [];
         var usersToEdit = getElementChildren(listToConvert);
@@ -321,8 +401,8 @@
 
         involvedUsersLabel.innerHTML = 'Involved Users';
 
-        transactionUsers.id     = 'transactionusers_' + transactionId.toString();
-        transactionUsersList.id = 'transactionuserslist_' + transactionId.toString();
+        transactionUsers.id     = 'transaction_' + transactionId.toString() + '_users_container';
+        transactionUsersList.id = 'transaction_' + transactionId.toString() + '_users_list';
 
         addUsersButton.type      = 'button';
         addUsersButton.innerHTML = 'Add Involved Users';
