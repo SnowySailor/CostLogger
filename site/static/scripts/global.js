@@ -1,3 +1,80 @@
+function flintToString(flint, baseOffset, decimalPlaces) {
+    if (!baseOffset) { baseOffset = 2; }
+    if (!decimalPlaces) { decimalPlaces = 2; }
+    var strVal = flint.toString();
+    var major  = '';
+    var minor  = '';
+    if (strVal.length > baseOffset) {
+        minor = strVal.substring(strVal.length - baseOffset);
+        major = strVal.substring(0, strVal.length - baseOffset);
+    } else {
+        major = '0';
+        minor = strVal;
+    }
+    minor = trim(padString(minor, decimalPlaces, '0', true), decimalPlaces);
+    var ret = major;
+    if (decimalPlaces == 0) {
+        return ret;
+    }
+    return ret + '.' + minor;
+}
+
+function trim(str, len) {
+    if (!str || !len) { return ''; }
+    if (str.length < len) { return str; }
+    return str.substring(0, len);
+}
+
+function padString(str, len, pad, fromBeginning) {
+    if (str.length >= len) { return str; }
+    if (pad.length == 0) { return ''; }
+    var remaining = Math.floor((len - str.length)/pad.length)
+    for (var i = 0; i < remaining; i++) {
+        if (fromBeginning) {
+            str = pad + str;
+        } else {
+            str = str + pad;
+        }
+    }
+    return str;
+}
+
+function stringToFlint(str, baseOffset) {
+    if (!baseOffset) { baseOffset = 2; }
+    if (!str) { return 0; }
+    var dotIdx = str.indexOf('.');
+    if (dotIdx > -1) {
+        var major = toInt(str.substring(0, dotIdx));
+        var minor = str.substring(dotIdx + 1);
+        var zeros = takeUntil(minor, function(x) { x != '0'; }).length;
+        minor     = toInt(minor) * Math.pow(10, -zeros);
+    } else {
+        var major = toInt(str);
+        var minor = 0;
+    }
+    return Math.round(Math.pow(10, baseOffset) * (major + minor));
+}
+
+function takeUntil(str, f) {
+    if (!str || !f) { return ''; }
+    var take = '';
+    for (var i = 0; i < str.length; i++) {
+        if (f(str[i])) { return take; }
+        take += str[i];
+    }
+    return take;
+}
+
+function replaceIds(parent, match, replace) {
+    if (!parent) { return; }
+    var elements = parent.querySelectorAll('*[id^="' + match + '"]')
+    for (var i = 0; i < elements.length; i++) {
+        var element = elements[i];
+        var newId = replace + element.id.substring(match.length);
+        element.id = newId;
+    }
+}
+
 function removeCharacter(s, c) {
     if (!s) { return ''; }
     return s.replace(c, '');
@@ -91,7 +168,7 @@ function isInList(e, l) {
 function toInt(v, d) {
     if (!d) { d = 0; }
     var n = parseInt(v);
-    if (isNaN(n)) { return d; }
+    if (isNaN(n)) { return d || 0; }
     return n;
 }
 
@@ -175,7 +252,7 @@ function httpPost(urlToPost, data, callback) {
                 showError();
                 callback(resp);
             } else if (xmlhttp.readyState == 4 && isBadRequest(xmlhttp.status)) {
-                showError(resp.Message);
+                showError(resp.Message || 'Error');
             }
         }
     }

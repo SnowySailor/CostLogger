@@ -88,6 +88,7 @@
             amount = amountInput.getAttribute('data-amount');
         } else if (hasClass(amountInput, 'amountinput')) {
             amount = getValue(amountInput);
+            amount = stringToFlint(amount);
         }
 
         // Get the comments
@@ -115,6 +116,7 @@
                     userid = getValue(userChild);
                 } else if (hasClass(userChild, 'percentageinput')) {
                     percent = getValue(userChild);
+                    percent = stringToFlint(percent);
                 } else if (hasClass(userChild, 'userlabel')) {
                     userid = userChild.getAttribute('data-user');
                 } else if (hasClass(userChild, 'percentagelabel')) {
@@ -123,7 +125,7 @@
             }
 
             userToAdd.UserId             = toInt(userid);
-            userToAdd.PercentInvolvement = toInt(removeCharacter(percent, '.'));
+            userToAdd.PercentInvolvement = percent;
 
             userList.push(userToAdd);
         }
@@ -140,7 +142,7 @@
             // TODO: Error
         }
 
-        transaction.Amount        = toInt(removeCharacter(amount, '.'));
+        transaction.Amount        = amount;
         transaction.Comments      = comments;
         transaction.InvolvedUsers = userList;
         return transaction;
@@ -197,7 +199,7 @@
         transactionComments.setAttribute('data-comments', transaction.Comments);
 
         transactionAmount.id        = 'transaction_' + transactionId.toString() + '_amount';
-        transactionAmount.innerHTML = 'Amount: $' + transaction.Amount;
+        transactionAmount.innerHTML = 'Amount: $' + flintToString(transaction.Amount);
         transactionAmount.setAttribute('data-amount', transaction.Amount);
 
         transactionUsersContainer.id = 'transaction_' + transactionId.toString() + '_users_container';
@@ -214,7 +216,7 @@
         addInvolvedUsersButton.innerHTML = 'Add Involved Users';
         addInvolvedUsersButton.setAttribute('onclick', 'onclickAddUser(' + transactionId.toString() + ')');
 
-        involvedUsersLabel.innerHTML = 'Invovled Users';
+        involvedUsersLabel.innerHTML = 'Involved Users';
 
         var usersToPopulate = [];
         for (var i = 0; i < transaction.InvolvedUsers.length; i++) {
@@ -227,7 +229,7 @@
             tUserLabel.setAttribute('data-user', user.UserId);
             addClassToElem(tUserLabel, 'userlabel');
 
-            percentageLabel.innerHTML = 'Percentage: ' + user.PercentInvolvement;
+            percentageLabel.innerHTML = 'Percentage: ' + flintToString(user.PercentInvolvement);
             percentageLabel.setAttribute('data-percentage', user.PercentInvolvement);
             addClassToElem(percentageLabel, 'percentagelabel');
 
@@ -286,7 +288,7 @@
         newPercentInput.max         = '100';
         newPercentInput.step        = '0.01';
         newPercentInput.placeholder = 'Percentage';
-        if (percentValue) { setValue(newPercentInput, percentValue) }
+        if (percentValue) { setValue(newPercentInput, flintToString(percentValue)); }
 
         deleteButton.type      = 'button';
         deleteButton.innerHTML = 'x'
@@ -455,9 +457,16 @@
         var usersToPut  = [];
         var usersToEdit = getElementChildren(listToConvert);
         for (var i = 0; i < usersToEdit.length; i++) {
-            var user       = usersToEdit[i];
-            var userId     = user.getAttribute('data-user');
-            var percentage = user.getAttribute('data-percentage');
+            var user         = usersToEdit[i];
+            var userChildren = getElementChildren(user);
+            for (var j = 0; j < userChildren.length; j++) {
+                var child = userChildren[j];
+                if (child.hasAttribute('data-user')) {
+                    var userId = child.getAttribute('data-user');
+                } else if (child.hasAttribute('data-percentage')) {
+                    var percentage = child.getAttribute('data-percentage');
+                }
+            }
             var userToPut  = makeUserWithInputs(transactionId, userId, percentage);
 
             usersToPut.push(userToPut);
@@ -573,7 +582,22 @@
             // TODO: Error messages
             alert("Error");
         }
-        // TODO: Post transaction
+        httpPost('transaction/' + transactionId.toString(), JSON.stringify(transaction), function(resp) {
+            transactionPostCallback(transactionId, resp);
+        });
         populateDOMTransaction(transactionId, transaction);
+    }
+
+    function transactionPostCallback(oldTransactionId, response) {
+        if (response.Message) {
+            var newId = toInt(response.Message);
+            if (newId == 0) { showError('Error 2. Transaction not saved.'); return; }
+            var transactionContainer = getElement('transaction_' + oldTransactionId.toString() + '_container');
+            if (!transactionContainer) { showError('Error 3. Transaction not saved.'); return; }
+            replaceIds(transactionContainer, 'transaction_' + oldTransactionId.toString(), 'transaction_' + newId.toString());
+            transactionContainer.id = 'transaction_' + newId.toString() + '_container';
+        } else {
+            showError('Error 3. Transaction not saved.');
+        }
     }
 </script>
