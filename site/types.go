@@ -104,7 +104,7 @@ type Transaction struct {
     Comments        string            `json:"comments"`
     CreateDate      time.Time
     UserId          int
-    InvolvedUsers   []TransactionUser `json:"involvesusers"`
+    InvolvedUsers   []TransactionUser `json:"involvedusers"`
     LastUpdateDate  time.Time
 }
 

@@ -2,6 +2,7 @@ package main
 
 import (
     "net/http"
+    "fmt"
 )
 
 func serveFile(ctx RequestContext) {
@@ -152,12 +153,13 @@ func postTransaction(ctx RequestContext) {
     }
 
     // Insert transaction
-    _, err = ctx.insertTransaction(transaction)
+    id, err := ctx.insertTransaction(transaction)
     if err != nil {
         response.Message = err.Error()
         ctx.badRequestJSON(response)
         return
     }
+    response.Message = fmt.Sprintf("%v", id)
     ctx.successJSON(response)
 }
 

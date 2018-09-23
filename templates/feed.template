@@ -49,7 +49,7 @@
         </div>
         <div class="transactionuserscontainer" id="transaction_{{.Id}}_users_container">
             {{if .InvolvedUsers}}
-            <div class="actionbtncontainer"><button onclick="onclickEditInvolvedUsers({{.Id}})" class="actionbtn">e</button></div>
+            <div class="actionbtncontainer"><button id="transaction_{{.Id}}_users_action_btn"onclick="onclickEditInvolvedUsers({{.Id}})" class="actionbtn">e</button></div>
             {{end}}
             <div class="involveduserslabel">Involved Users</div>
             <div id="transaction_{{.Id}}_users_list">
@@ -125,7 +125,7 @@
             }
 
             userToAdd.UserId             = toInt(userid);
-            userToAdd.PercentInvolvement = percent;
+            userToAdd.PercentInvolvement = toInt(percent);
 
             userList.push(userToAdd);
         }
@@ -142,7 +142,7 @@
             // TODO: Error
         }
 
-        transaction.Amount        = amount;
+        transaction.Amount        = toInt(amount);
         transaction.Comments      = comments;
         transaction.InvolvedUsers = userList;
         return transaction;
@@ -204,6 +204,7 @@
 
         transactionUsersContainer.id = 'transaction_' + transactionId.toString() + '_users_container';
 
+        usersActionButton.id        = 'transaction_' + transactionId.toString() + '_users_action_btn';
         usersActionButton.innerHTML = 'e';
         usersActionButton.setAttribute('onclick', 'onclickEditInvolvedUsers(' + transactionId.toString() + ')');
 
@@ -229,7 +230,7 @@
             tUserLabel.setAttribute('data-user', user.UserId);
             addClassToElem(tUserLabel, 'userlabel');
 
-            percentageLabel.innerHTML = 'Percentage: ' + flintToString(user.PercentInvolvement);
+            percentageLabel.innerHTML = 'Percentage: ' + flintToString(user.PercentInvolvement) + '%%';
             percentageLabel.setAttribute('data-percentage', user.PercentInvolvement);
             addClassToElem(percentageLabel, 'percentagelabel');
 
@@ -476,6 +477,10 @@
         for (var i = 0; i < usersToPut.length; i++) {
             listToConvert.appendChild(usersToPut[i]);
         }
+
+        var actionButton = getElement('transaction_' + transactionId.toString() + '_users_action_btn');
+        actionButton.innerHTML = 's';
+        actionButton.setAttribute('onclick', 'onclickSaveTransaction(' + transactionId + ')');
 
         var addButtonContainer = getElement('transaction_' + transactionId.toString() + '_add_btn_container');
         if (!addButtonContainer) { return; }
