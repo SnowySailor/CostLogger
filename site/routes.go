@@ -46,6 +46,10 @@ func routeRequest(resp http.ResponseWriter, req *http.Request) {
         } else {
             ctx.notFoundPage("Invalid route")
         }
+    } else if ctx.method == "DELETE" {
+        if mainRoute == "transaction" {
+            deleteTransaction(ctx)
+        }
     } else {
         ctx.badRequestRaw("HTTP Method not supported")
     }

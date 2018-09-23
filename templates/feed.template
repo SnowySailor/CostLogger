@@ -40,15 +40,17 @@
 <div id="transactionlist" class="transactionlist">
     {{range .Transactions}}
     <div class="transactioncontainer" id="transaction_{{.Id}}_container">
+        {{if eq .UserId $.UserId}}
         <div class="deletebtncontainer"><button onclick="onclickDeleteTransaction({{.Id}})" class="actionbtn">x</button></div>
         <div class="actionbtncontainer"><button id="transaction_{{.Id}}_action_btn" onclick="onclickEditTransaction({{.Id}})" class="actionbtn">e</button></div>
+        {{end}}
         <div class="userlabel">User: {{.UserId}}</div>
         <div id="transaction_{{.Id}}_fields_container">
             <div id="transaction_{{.Id}}_amount" data-amount="{{.Amount}}" class="amountlabel">Amount: ${{.Amount.FlintToString 2 2}}</div>
             <div id="transaction_{{.Id}}_comments" data-comments="{{.Comments}}" class="commentslabel">Comments: {{if .Comments}}{{.Comments}}{{else}}(none){{end}}</div>
         </div>
         <div class="transactionuserscontainer" id="transaction_{{.Id}}_users_container">
-            {{if .InvolvedUsers}}
+            {{if ((eq .UserId $.UserId) and (.InvolvedUsers))}}
             <div class="actionbtncontainer"><button id="transaction_{{.Id}}_users_action_btn"onclick="onclickEditInvolvedUsers({{.Id}})" class="actionbtn">e</button></div>
             {{end}}
             <div class="involveduserslabel">Involved Users</div>
@@ -61,7 +63,7 @@
                 {{end}}
             </div>
             <div id="transaction_{{.Id}}_add_btn_container">
-                {{if not .InvolvedUsers}}
+                {{if (not .InvolvedUsers) and (eq .UserId $.UserId)}}
                 <button type="button" id="transaction_{{.Id}}_add_btn" onclick="onclickAddUser({{.Id}})">Add Involved Users</button>
                 {{end}}
             </div>
@@ -340,6 +342,10 @@
         var addButton       = getElement('transaction_' + transactionId.toString() + '_add_btn');
         addButton.innerHTML = '+';
 
+        var actionButton = getElement('transaction_' + transactionId.toString() + '_users_action_btn');
+        actionButton.innerHTML = 's';
+        actionButton.setAttribute('onclick', 'onclickSaveTransaction(' + transactionId.toString() + ')');
+
         // If we've selected all users, hide the add button
         showAddUserButtonIfNeeded(transactionId);
     }
@@ -403,8 +409,10 @@
         var c = confirm('Are you sure you want to delete this transaction?');
         // TODO: call delete transaction
         if (c) {
-            var transaction = getElement('transaction_' + transactionId.toString() + '_container');
-            removeElement(transaction);
+            httpDelete('transaction/' + transactionId.toString(), function(resp) {
+                var transaction = getElement('transaction_' + transactionId.toString() + '_container');
+                removeElement(transaction);
+            });
         }
     }
 
@@ -578,7 +586,7 @@
         transactionContainer.appendChild(transactionUsers);
         transactionContainer.appendChild(addUsersButton);
 
-        transactionList.appendChild(transactionContainer);
+        prependChild(transactionList, transactionContainer);
     }
 
     function onclickSaveTransaction(transactionId) {

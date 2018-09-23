@@ -12,6 +12,13 @@ import (
     "strconv"
 )
 
+func getValueString(i int, l []string) (string, bool) {
+    if i >= len(l) {
+        return "", false
+    }
+    return l[i], true
+}
+
 func toMinimalUsers(users []User) []MinimalUser {
     var minimalUsers []MinimalUser
     for _, user := range users {

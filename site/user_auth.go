@@ -45,3 +45,7 @@ func (ctx *RequestContext) logoutUser() {
 func (ctx *RequestContext) setSessionUserId(userId int) {
     ctx.setSession("UserId", userId)
 }
+
+func isUserAuthForTransactionEdit(userId int, transaction Transaction) bool {
+    return transaction.UserId == userId
+}

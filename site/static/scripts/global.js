@@ -1,3 +1,14 @@
+function prependChild(p, e) {
+    if (!p || !e) { return; }
+    var parentChildren = getElementChildren(p);
+    if (parentChildren.length == 0) {
+        p.appendChild(e);
+    } else {
+        var firstChild = parentChildren[0];
+        p.insertBefore(e, firstChild);
+    }
+}
+
 function flintToString(flint, baseOffset, decimalPlaces) {
     if (!baseOffset) { baseOffset = 2; }
     if (!decimalPlaces) { decimalPlaces = 2; }
@@ -104,7 +115,7 @@ function parseJSON(json, d) {
     return resp;
 }
 
-function httpGet(urlToGet, callback) {
+function http(type, url, data, callback) {
     var isAsync = callback ? true : false;
     var xmlhttp = new XMLHttpRequest();
     if (isAsync) {
@@ -114,13 +125,25 @@ function httpGet(urlToGet, callback) {
                 showError();
                 callback(resp);
             } else if (xmlhttp.readyState == 4 && isBadRequest(xmlhttp.status)) {
-                showError(resp.Message);
+                showError(resp.Message || 'Error');
             }
         }
     }
-    xmlhttp.open("GET", urlToGet, isAsync);
-    xmlhttp.send();
+    xmlhttp.open(type, url, isAsync);
+    xmlhttp.send(data || null);
     if (!isAsync) { return xmlhttp.responseText; }
+}
+
+function httpGet(urlToGet, callback) {
+    return http('GET', urlToGet, null, callback);
+}
+
+function httpPost(urlToPost, data, callback) {
+    return http('POST', urlToPost, data, callback);
+}
+
+function httpDelete(url, callback) {
+    return http('DELETE', url, null, callback);
 }
 
 function getValueById(id) {
@@ -240,25 +263,6 @@ function makeFormData(form) {
         f.append(child.name, getValue(child));
     }
     return f;
-}
-
-function httpPost(urlToPost, data, callback) {
-    var isAsync = callback ? true : false;
-    var xmlhttp = new XMLHttpRequest();
-    if (isAsync) {
-        xmlhttp.onreadystatechange = function() {
-            var resp = parseJSON(xmlhttp.responseText, {});
-            if (xmlhttp.readyState == 4 && isSuccess(xmlhttp.status)) {
-                showError();
-                callback(resp);
-            } else if (xmlhttp.readyState == 4 && isBadRequest(xmlhttp.status)) {
-                showError(resp.Message || 'Error');
-            }
-        }
-    }
-    xmlhttp.open("POST", urlToPost, isAsync);
-    xmlhttp.send(data);
-    if (!isAsync) { return xmlhttp.responseText; }
 }
 
 function isSuccess(status) {

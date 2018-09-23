@@ -80,7 +80,7 @@ type HeaderData struct {
 type FeedData struct {
     Transactions []Transaction
     UsersJSON    string
-    UserCount    int
+    UserId       int
 }
 
 // Application data types

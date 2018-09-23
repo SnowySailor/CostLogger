@@ -3,12 +3,16 @@ package main
 import (
     "net/http"
     "fmt"
+    "strconv"
 )
 
 func serveFile(ctx RequestContext) {
     location := removeLeadingSlash(ctx.request.URL.Path)
     http.ServeFile(ctx.response, ctx.request, location)
 }
+
+// GET HANDLERS
+// //////////////////////////////////////////////////////////////
 
 func getHome(ctx RequestContext) {
     if ctx.isUserLoggedIn() {
@@ -66,7 +70,7 @@ func (ctx *RequestContext) getFeedHtml() (string, error) {
     }
 
     // Construct feed data and feed it to templates
-    feedData := FeedData{Transactions:transactions, UsersJSON:minimalJSON, UserCount:len(users)}
+    feedData := FeedData{Transactions:transactions, UsersJSON:minimalJSON, UserId:ctx.userId}
     feed, err := makeHtml("../templates/feed.template", feedData)
     if err != nil {
         return "", err
@@ -132,6 +136,9 @@ func getUsers(ctx RequestContext) {
     response.Message = usersJSON
     ctx.successJSON(response)
 }
+
+// POST HANDLERS
+// //////////////////////////////////////////////////////////////
 
 func postTransaction(ctx RequestContext) {
     response := makeJSONResponse("")
@@ -214,5 +221,54 @@ func postRegisterUser(ctx RequestContext) {
 
     // Redirect to login
     response.RedirectUrl = "login"
+    ctx.successJSON(response)
+}
+
+
+// DELETE HANDLERS
+// //////////////////////////////////////////////////////////////
+
+func deleteTransaction(ctx RequestContext) {
+    response := makeJSONResponse("")
+    if !ctx.isUserLoggedIn() {
+        response.Message = "Not authorized"
+        ctx.notAuthorizedJSON(response)
+        return
+    }
+
+    transactionIdStr, ok := getValueString(1, ctx.routes)
+    if !ok {
+        response.Message = "Invalid transaction id"
+        ctx.badRequestJSON(response)
+        return
+    }
+
+    transactionId, err := strconv.Atoi(transactionIdStr)
+    if err != nil {
+        response.Message = "Invalid transaction id"
+        ctx.badRequestJSON(response)
+        return
+    }
+
+    transaction, err := ctx.getTransaction(transactionId)
+    if err != nil {
+        println(err.Error())
+        ctx.internalErrorJSON()
+        return
+    }
+
+    if !isUserAuthForTransactionEdit(ctx.userId, transaction) {
+        response.Message = "Does not exist or not authorized"
+        ctx.badRequestJSON(response)
+        return
+    }
+
+    err = ctx.deleteTransaction(transactionId)
+    if err != nil {
+        println(err.Error())
+        ctx.internalErrorJSON()
+        return
+    }
+
     ctx.successJSON(response)
 }

@@ -101,7 +101,7 @@ func (ctx *RequestContext) insertUser(user User) (int, error) {
 func (ctx *RequestContext) getTransaction(transactionId int) (Transaction, error) {
     var transaction Transaction
     // Query
-    query := "select id, amount, comments, create_date, user_id, last_update_time from transaction where id = $1"
+    query := "select id, amount, comments, create_date, user_id, last_update_date from transaction where id = $1"
     row   := ctx.database.QueryRow(query, transactionId)
     err   := row.Scan(&transaction.Id, &transaction.Amount, &transaction.Comments, &transaction.CreateDate, &transaction.UserId, &transaction.LastUpdateDate)
 
@@ -154,6 +154,52 @@ func (ctx *RequestContext) insertTransaction(transaction Transaction) (int, erro
     }
 
     return transactionId, err
+}
+
+func (ctx RequestContext) deleteTransaction(transactionId int) error {
+    userQuery        := "delete from transaction_user where transaction_id = $1"
+    transactionQuery := "delete from transaction where id = $1"
+
+    tx, err := ctx.database.Begin()
+    if err != nil {
+        return err
+    }
+
+    // Delete users involved
+    _, err = ctx.database.Exec(userQuery, transactionId)
+    if err != nil {
+        err2 := tx.Rollback()
+        if err2 != nil {
+            return err2
+        }
+        return err
+    }
+
+    // Delete the transaction itself
+    res, err := ctx.database.Exec(transactionQuery, transactionId)
+    if err != nil {
+        err2 := tx.Rollback()
+        if err2 != nil {
+            return err2
+        }
+        return err
+    }
+
+    err = tx.Commit()
+    if err != nil {
+        return err
+    }
+
+    // Make sure we actually deleted a transaction
+    count, err := res.RowsAffected()
+    if err != nil {
+        return err
+    }
+    if count == 0 {
+        return makeError(fmt.Sprintf("Transaction does not exist"))
+    }
+    
+    return nil
 }
 
 // Get the users that are involved in a transaction
@@ -235,7 +281,7 @@ func (ctx *RequestContext) getUserTransactions(userId int) ([]Transaction, error
 
     // Sort by CreateDate
     sort.Slice(transactions, func(i int, j int) bool {
-        return transactions[i].CreateDate.Before(transactions[j].CreateDate)
+        return transactions[i].CreateDate.After(transactions[j].CreateDate)
     })
     return transactions, nil
 }
