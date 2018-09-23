@@ -39,7 +39,7 @@
 </div>
 <div id="transactionlist" class="transactionlist">
     {{range .Transactions}}
-    <div class="transactioncontainer" id="transaction_container_{{.Id}}">
+    <div class="transactioncontainer" id="transaction_{{.Id}}_container">
         <div class="deletebtncontainer"><button onclick="onclickDeleteTransaction({{.Id}})" class="actionbtn">x</button></div>
         <div class="actionbtncontainer"><button id="transaction_{{.Id}}_action_btn" onclick="onclickEditTransaction({{.Id}})" class="actionbtn">e</button></div>
         <div class="userlabel">User: {{.UserId}}</div>
@@ -75,7 +75,7 @@
         G.AllUsers = parseJSON(getElement('all_users').getAttribute('data-user-json'), []);
     }
 
-    function getTransactionFromInputs(transactionId) {
+    function getTransactionFromDOM(transactionId) {
         var userListContainer = getElement('transaction_' + transactionId.toString() + '_users_list');
         var transaction = {};
         var amount      = 0;
@@ -107,7 +107,7 @@
             var user         = userListElements[i];
             var userChildren = getElementChildren(user);
             var percent      = 0;
-            var userid       = 0
+            var userid       = 0;
 
             for (var j = 0; j < userChildren.length; j++) {
                 var userChild = userChildren[j];
@@ -140,10 +140,132 @@
             // TODO: Error
         }
 
-        transaction.Amount        = amount;
+        transaction.Amount        = toInt(removeCharacter(amount, '.'));
         transaction.Comments      = comments;
         transaction.InvolvedUsers = userList;
         return transaction;
+    }
+
+    function populateDOMTransaction(transactionId, transaction) {
+        if (!transaction) { return; }
+        var transactionContainer = getElement('transaction_' + transactionId.toString() + '_container');
+        if (!transactionContainer) { return; }
+
+        var deleteButtonContainer      = document.createElement('DIV');
+        var deleteButton               = document.createElement('BUTTON');
+        var actionButtonContainer      = document.createElement('DIV');
+        var actionButton               = document.createElement('BUTTON');
+        var userLabel                  = document.createElement('DIV');
+        var transactionFieldsContainer = document.createElement('DIV');
+        var transactionAmount          = document.createElement('DIV');
+        var transactionComments        = document.createElement('DIV');
+        var transactionUsersContainer  = document.createElement('DIV');
+        var usersActionButtonContainer = document.createElement('DIV');
+        var usersActionButton          = document.createElement('BUTTON');
+        var involvedUsersLabel         = document.createElement('DIV');
+        var involvedUsersList          = document.createElement('DIV');
+        var addInvolvedUsersContainer  = document.createElement('DIV');
+        var addInvolvedUsersButton     = document.createElement('BUTTON');
+
+        addClassToElem(deleteButtonContainer     , 'deletebtncontainer');
+        addClassToElem(actionButtonContainer     , 'actionbtncontainer');
+        addClassToElem(deleteButton              , 'actionbtn');
+        addClassToElem(actionButton              , 'actionbtn');
+        addClassToElem(userLabel                 , 'userlabel');
+        addClassToElem(transactionComments       , 'commentslabel');
+        addClassToElem(transactionAmount         , 'amountlabel');
+        addClassToElem(transactionUsersContainer , 'transactionuserscontainer');
+        addClassToElem(usersActionButtonContainer, 'actionbtncontainer');
+        addClassToElem(usersActionButton         , 'actionbtn');
+        addClassToElem(involvedUsersLabel        , 'involveduserslabel');
+
+        deleteButton.type      = 'button';
+        deleteButton.innerHTML = 'x';
+        deleteButton.setAttribute('onclick', 'onclickDeleteTransaction(' + transactionId.toString() + ')');
+
+        actionButton.id        = 'transaction_' + transactionId.toString() + '_action_btn';
+        actionButton.type      = 'button';
+        actionButton.innerHTML = 'e';
+        actionButton.setAttribute('onclick', 'onclickEditTransaction(' + transactionId.toString() + ')');
+
+        userLabel.innerHTML = 'User: ' + transaction.UserId;
+
+        transactionFieldsContainer.id = 'transaction_' + transactionId.toString() + '_fields_container';
+
+        transactionComments.id        = 'transaction_' + transactionId.toString() + '_comments';
+        transactionComments.innerHTML = 'Comments: ' + (transaction.Comments || '(none)');
+        transactionComments.setAttribute('data-comments', transaction.Comments);
+
+        transactionAmount.id        = 'transaction_' + transactionId.toString() + '_amount';
+        transactionAmount.innerHTML = 'Amount: $' + transaction.Amount;
+        transactionAmount.setAttribute('data-amount', transaction.Amount);
+
+        transactionUsersContainer.id = 'transaction_' + transactionId.toString() + '_users_container';
+
+        usersActionButton.innerHTML = 'e';
+        usersActionButton.setAttribute('onclick', 'onclickEditInvolvedUsers(' + transactionId.toString() + ')');
+
+        involvedUsersList.id = 'transaction_' + transactionId.toString() + '_users_list';
+
+        addInvolvedUsersContainer.id = 'transaction_' + transactionId.toString() + '_add_btn_container';
+
+        addInvolvedUsersButton.id        = 'transaction_' + transactionId.toString() + '_add_btn';
+        addInvolvedUsersButton.type      = 'button';
+        addInvolvedUsersButton.innerHTML = 'Add Involved Users';
+        addInvolvedUsersButton.setAttribute('onclick', 'onclickAddUser(' + transactionId.toString() + ')');
+
+        involvedUsersLabel.innerHTML = 'Invovled Users';
+
+        var usersToPopulate = [];
+        for (var i = 0; i < transaction.InvolvedUsers.length; i++) {
+            var user            = transaction.InvolvedUsers[i];
+            var userContainer   = document.createElement('DIV');
+            var tUserLabel      = document.createElement('DIV');
+            var percentageLabel = document.createElement('DIV');
+
+            tUserLabel.innerHTML = 'User: ' + user.UserId;
+            tUserLabel.setAttribute('data-user', user.UserId);
+            addClassToElem(tUserLabel, 'userlabel');
+
+            percentageLabel.innerHTML = 'Percentage: ' + user.PercentInvolvement;
+            percentageLabel.setAttribute('data-percentage', user.PercentInvolvement);
+            addClassToElem(percentageLabel, 'percentagelabel');
+
+            userContainer.appendChild(tUserLabel);
+            userContainer.appendChild(percentageLabel);
+            usersToPopulate.push(userContainer);
+        }
+
+        // Build DOM
+        removeAllChildren(transactionContainer);
+
+        for (var i = 0; i < usersToPopulate.length; i++) {
+            involvedUsersList.appendChild(usersToPopulate[i]);
+        }
+
+        transactionFieldsContainer.appendChild(transactionAmount);
+        transactionFieldsContainer.appendChild(transactionComments);
+
+        if (usersToPopulate.length == 0) {
+            addInvolvedUsersContainer.appendChild(addInvolvedUsersButton);
+        }
+
+        deleteButtonContainer.appendChild(deleteButton);
+        actionButtonContainer.appendChild(actionButton);
+        usersActionButtonContainer.appendChild(usersActionButton);
+
+        if (usersToPopulate.length > 0) {
+            transactionUsersContainer.appendChild(usersActionButtonContainer);
+        }
+        transactionUsersContainer.appendChild(involvedUsersLabel);
+        transactionUsersContainer.appendChild(involvedUsersList);
+        transactionUsersContainer.appendChild(addInvolvedUsersContainer);
+
+        transactionContainer.appendChild(deleteButtonContainer);
+        transactionContainer.appendChild(actionButtonContainer);
+        transactionContainer.appendChild(userLabel);
+        transactionContainer.appendChild(transactionFieldsContainer);
+        transactionContainer.appendChild(transactionUsersContainer);
     }
 
     function makeUserWithInputs(transactionId, userValue, percentValue) {
@@ -278,7 +400,7 @@
         var c = confirm('Are you sure you want to delete this transaction?');
         // TODO: call delete transaction
         if (c) {
-            var transaction = getElement('transaction_container_' + transactionId.toString());
+            var transaction = getElement('transaction_' + transactionId.toString() + '_container');
             removeElement(transaction);
         }
     }
@@ -387,15 +509,19 @@
         var saveButtonContainer  = document.createElement('DIV');
         var saveButton           = document.createElement('BUTTON');
 
+        transactionContainer.id = 'transaction_' + transactionId.toString() + '_container';
+
         userLabel.innerHTML = 'User: Me';
 
         inputsContainer.id = 'transaction_' + transactionId.toString() + '_fields_container';
 
+        amountInput.id          = 'transaction_' + transactionId.toString() + '_amount';
         amountInput.type        = 'number';
         amountInput.min         = '0';
         amountInput.step        = '0.01';
         amountInput.placeholder = 'Amount';
 
+        commentsInput.id          = 'transaction_' + transactionId.toString() + '_comments';
         commentsInput.type        = 'text';
         commentsInput.placeholder = 'Comments';
 
@@ -422,6 +548,8 @@
         addClassToElem(saveButton          , 'actionbtn');
         addClassToElem(saveButtonContainer , 'actionbtncontainer');
         addClassToElem(userLabel           , 'userlabel');
+        addClassToElem(amountInput         , 'amountinput');
+        addClassToElem(commentsInput       , 'commentsinput');
 
         saveButtonContainer.appendChild(saveButton);
         transactionUsers.appendChild(transactionUsersList);
@@ -440,6 +568,12 @@
     }
 
     function onclickSaveTransaction(transactionId) {
-        return;
+        var transaction = getTransactionFromDOM(transactionId);
+        if (!transaction) {
+            // TODO: Error messages
+            alert("Error");
+        }
+        // TODO: Post transaction
+        populateDOMTransaction(transactionId, transaction);
     }
 </script>
