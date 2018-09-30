@@ -54,6 +54,7 @@ type AppConfig struct {
         internHttpOnly bool
     } `yaml:"sessionconfig"`
     WebConfig struct {
+        Port              int   `yaml:"port"`
         MaxUploadSize     int64 `yaml:"maxuploadsize"`
         PasswordStrength  int   `yaml:"passwordstrength"`
         MinPasswordLength int   `yaml:"minpasswordlength"`

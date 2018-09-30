@@ -86,6 +86,25 @@ function replaceIds(parent, match, replace) {
     }
 }
 
+function replaceMatches(parent, q, qp, m, r) {
+    if (!parent || !q) { return; }
+    var elements = parent.querySelectorAll('*[' + q + qp + ']');
+    console.log(elements);
+    for (var i = 0; i < elements.length; i++) {
+        var element = elements[i];
+        var eq = element.getAttribute(q);
+        if (eq === null) { continue; }
+        var idx = eq.indexOf(m);
+        if (idx > 0) {
+            var newAtt = eq.substring(0, idx) + r;
+            if (eq.length > idx + m.length) {
+                newAtt += eq.substring(idx + m.length);
+            }
+            element.setAttribute(q, newAtt);
+        }
+    }
+}
+
 function removeCharacter(s, c) {
     if (!s) { return ''; }
     return s.replace(c, '');

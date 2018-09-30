@@ -12,6 +12,7 @@ import (
     "fmt"
     "github.com/gorilla/context"
     "github.com/gorilla/sessions"
+    "strconv"
 )
 
 func main() {
@@ -21,7 +22,8 @@ func main() {
         MaxAge:   config.SessionConfig.MaxAge,
         HttpOnly: config.SessionConfig.internHttpOnly,
     }
+    portStr := strconv.Itoa(config.WebConfig.Port)
     http.HandleFunc("/", routeRequest)
-    fmt.Println("Listening on " + "localhost" + ":8080")
-    log.Fatal(http.ListenAndServe(":8080", context.ClearHandler(http.DefaultServeMux)))
+    fmt.Println("Listening on " + "localhost" + portStr)
+    log.Fatal(http.ListenAndServe(":" + portStr, context.ClearHandler(http.DefaultServeMux)))
 }

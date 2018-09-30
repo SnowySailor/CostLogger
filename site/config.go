@@ -33,6 +33,9 @@ func (conf *AppConfig) validateWebConfig() []string {
     if conf.WebConfig.PasswordStrength <= 0 {
         conf.WebConfig.PasswordStrength = 10
     }
+    if conf.WebConfig.Port <= 0 {
+        errors = append(errors, "No port provided")
+    }
     return errors
 }
 

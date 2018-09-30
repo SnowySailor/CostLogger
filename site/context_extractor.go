@@ -5,6 +5,7 @@ import (
     "encoding/json"
     "io/ioutil"
     "time"
+    "strconv"
 )
 
 func (ctx *RequestContext) extractNewUser() (User, error) {
@@ -53,11 +54,24 @@ func (ctx *RequestContext) extractNewUser() (User, error) {
 
 func (ctx *RequestContext) extractTransaction() (Transaction, error) {
     var t Transaction
+
+    // Get/parse transactionId from url
+    transactionIdStr, ok := getValueString(1, ctx.routes)
+    if !ok {
+        return t, makeError("Invalid transaction id")
+    }
+
+    transactionId, err := strconv.Atoi(transactionIdStr)
+    if err != nil {
+        return t, makeError("Invalid transaction id")
+    }
+
     now := time.Now().UTC()
-    err := json.Unmarshal(ctx.getRequestBody(), &t)
+    err  = json.Unmarshal(ctx.getRequestBody(), &t)
     t.LastUpdateDate = now
     t.CreateDate     = now
     t.UserId         = ctx.userId
+    t.Id             = transactionId
     return t, err
 }
 
@@ -73,7 +87,7 @@ func (ctx *RequestContext) validateTransaction(transaction Transaction) error {
     if transaction.Id > 0 {
         existingT, err := ctx.getTransaction(transaction.Id)
         // If we get back an existing transaction, it definitely exists
-        if err != nil {
+        if err == nil {
             if existingT.UserId != ctx.userId {
                 return makeError("Not authorized")
             } 

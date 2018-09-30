@@ -160,7 +160,7 @@ func postTransaction(ctx RequestContext) {
     }
 
     // Insert transaction
-    id, err := ctx.insertTransaction(transaction)
+    id, err := ctx.insertOrUpdateTransaction(transaction)
     if err != nil {
         response.Message = err.Error()
         ctx.badRequestJSON(response)

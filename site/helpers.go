@@ -15,7 +15,7 @@ import (
 func getValueString(i int, l []string) (string, bool) {
     if i >= len(l) {
         return "", false
-    }
+    } 
     return l[i], true
 }
 
