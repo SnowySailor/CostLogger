@@ -1,3 +1,13 @@
+function getUserById(id) {
+    if (G.AllUsers && G.AllUsers.length > 0) {
+        for (var i = 0; i < G.AllUsers.length; i++) {
+            if (G.AllUsers[i].Id == id) {
+                return G.AllUsers[i];
+            }
+        }
+    }
+}
+
 function prependChild(p, e) {
     if (!p || !e) { return; }
     var parentChildren = getElementChildren(p);

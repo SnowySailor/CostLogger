@@ -19,6 +19,45 @@ func getValueString(i int, l []string) (string, bool) {
     return l[i], true
 }
 
+func (ctx RequestContext) ToPageTransactions(transactions []Transaction) ([]PageTransaction, error) {
+    var pageTransactions []PageTransaction
+    for _, transaction := range transactions {
+        var pageTransaction PageTransaction
+        pageTransaction.Id             = transaction.Id
+        pageTransaction.UserId         = transaction.UserId
+        pageTransaction.Amount         = transaction.Amount
+        pageTransaction.Comments       = transaction.Comments
+        pageTransaction.CreateDate     = transaction.CreateDate
+        pageTransaction.LastUpdateDate = transaction.LastUpdateDate
+
+        owningUser, err := ctx.getUserBy("id", pageTransaction.UserId)
+        if err != nil {
+            return pageTransactions, err
+        }
+        pageTransaction.DisplayName = owningUser.DisplayName
+        pageTransaction.Username    = owningUser.Username
+
+        for _, user := range transaction.InvolvedUsers {
+            var pageUser PageTransactionUser
+            pageUser.UserId             = user.UserId
+            pageUser.PercentInvolvement = user.PercentInvolvement
+            
+            user, err := ctx.getUserBy("id", pageUser.UserId)
+            if err != nil {
+                return pageTransactions, err
+            }
+
+            pageUser.DisplayName = user.DisplayName
+            pageUser.Username    = user.Username
+
+            pageTransaction.InvolvedUsers = append(pageTransaction.InvolvedUsers, pageUser)
+        }
+
+        pageTransactions = append(pageTransactions, pageTransaction)
+    }
+    return pageTransactions, nil
+}
+
 func toMinimalUsers(users []User) []MinimalUser {
     var minimalUsers []MinimalUser
     for _, user := range users {

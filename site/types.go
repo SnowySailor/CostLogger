@@ -79,9 +79,28 @@ type HeaderData struct {
 }
 
 type FeedData struct {
-    Transactions []Transaction
-    UsersJSON    string
-    UserId       int
+    Transactions  []PageTransaction
+    UsersJSON     string
+    CurrentUserId int
+}
+
+type PageTransaction struct {
+    Id              int
+    Amount          flint
+    Comments        string
+    CreateDate      time.Time
+    UserId          int
+    DisplayName     string
+    Username        string
+    InvolvedUsers   []PageTransactionUser
+    LastUpdateDate  time.Time
+}
+
+type PageTransactionUser struct {
+    UserId             int
+    PercentInvolvement flint
+    Username           string
+    DisplayName        string
 }
 
 // Application data types

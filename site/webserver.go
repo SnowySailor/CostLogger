@@ -24,6 +24,6 @@ func main() {
     }
     portStr := strconv.Itoa(config.WebConfig.Port)
     http.HandleFunc("/", routeRequest)
-    fmt.Println("Listening on " + "localhost" + portStr)
+    fmt.Println("Listening on " + "localhost:" + portStr)
     log.Fatal(http.ListenAndServe(":" + portStr, context.ClearHandler(http.DefaultServeMux)))
 }

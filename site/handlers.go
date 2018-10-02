@@ -55,6 +55,13 @@ func (ctx *RequestContext) getFeedHtml() (string, error) {
         return "", err
     }
 
+    // Convert transactions to page transactions
+    pageTransactions, err := ctx.ToPageTransactions(transactions)
+    if err != nil {
+        println(err.Error())
+        return "", err
+    }
+
     // Get all users
     users, err := ctx.getAllUsers()
     if err != nil {
@@ -70,7 +77,7 @@ func (ctx *RequestContext) getFeedHtml() (string, error) {
     }
 
     // Construct feed data and feed it to templates
-    feedData := FeedData{Transactions:transactions, UsersJSON:minimalJSON, UserId:ctx.userId}
+    feedData := FeedData{Transactions:pageTransactions, UsersJSON:minimalJSON, CurrentUserId:ctx.userId}
     feed, err := makeHtml("../templates/feed.template", feedData)
     if err != nil {
         return "", err
@@ -84,7 +91,7 @@ func getRegisterUser(ctx RequestContext) {
         ctx.badRequestRaw("Internal error rendering page")
         return
     }
-    pageData        := makePageData("Register", inputForm, []Link{{Url:"/static/styles/global.css"}}, []Link{{Url:"/static/scripts/global.js"}})
+    pageData := makePageData("Register", inputForm, []Link{{Url:"/static/styles/global.css"}}, []Link{{Url:"/static/scripts/global.js"}})
     ctx.successPage(pageData)
 }
 
