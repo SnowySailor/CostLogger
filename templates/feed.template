@@ -33,7 +33,7 @@
 }
 </style>
 <div class="hidden" id="all_users" data-user-json="{{.UsersJSON}}"></div>
-<div class="hiddne" id="current_user" data-user="{{.CurrentUserId}}"></div>
+<div class="hidden" id="current_user" data-user="{{.CurrentUserId}}"></div>
 <div class="feedheader">
     <h2>Transactions</h2>
     <button style="margin-bottom:20px;" type="button" onclick="onclickAddTransaction()">Add Transaction</button>
