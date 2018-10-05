@@ -23,7 +23,7 @@ func main() {
         HttpOnly: config.SessionConfig.internHttpOnly,
     }
     portStr := strconv.Itoa(config.WebConfig.Port)
-    http.HandleFunc("/", routeRequest)
+    http.HandleFunc("/", handleRequest)
     fmt.Println("Listening on " + "localhost:" + portStr)
     log.Fatal(http.ListenAndServe(":" + portStr, context.ClearHandler(http.DefaultServeMux)))
 }

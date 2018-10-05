@@ -4,9 +4,16 @@ import (
     "net/http"
 )
 
-func routeRequest(resp http.ResponseWriter, req *http.Request) {
-    ctx := establishRequestContext(req, resp)
+func handleRequest(resp http.ResponseWriter, req *http.Request) {
+    ctx := establishRequestContext(req ,resp)
+    routeRequest(resp, req, ctx)
+    err := ctx.destroy()
+    if err != nil {
+        print(err.Error())
+    }
+}
 
+func routeRequest(resp http.ResponseWriter, req *http.Request, ctx RequestContext) {
     mainRoute := firstOrDefault(ctx.routes)
     printList(ctx.routes)
     printStrLStrMap(getQueryParams(*req))

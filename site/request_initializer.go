@@ -30,6 +30,20 @@ func establishRequestContext(req *http.Request, resp http.ResponseWriter) Reques
     return ctx
 }
 
+func (ctx *RequestContext) destroy() error {
+    err := ctx.database.Close()
+    if err != nil {
+        return err
+    }
+
+    err = ctx.redis.Close()
+    if err != nil {
+        return err
+    }
+
+    return nil
+}
+
 func (ctx *RequestContext) getUserId() int {
     userId, exists := ctx.getSessionInt("UserId")
     if exists {
