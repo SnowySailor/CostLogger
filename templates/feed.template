@@ -1,21 +1,37 @@
 <style>
 .transactionlist {
-    width:500px;
+    width:520px;
     margin-left:auto;
     margin-right:auto;
 }
 
 .transactioncontainer {
     margin-bottom:20px;
-    background-color:#555;
+    background-color:#888;
+    padding:10px;
+    border-radius:5px;
 }
 
-.transactionuserscontainer {
-    background-color:#777;
+.transactionuser {
+    margin-top:10px;
 }
 
 .userlabel, .involveduserslabel {
     display:inline-block;
+}
+
+.owninguserlabel {
+    margin-bottom:10px;
+    font-weight: bold;
+}
+
+.involveduserslabel {
+    font-weight: bold;
+}
+
+.transactionuserscontainer {
+    margin-top:10px;
+    padding:5px 0px;
 }
 
 .deletebtncontainer, .actionbtncontainer {
@@ -31,10 +47,43 @@
     border:none;
     margin-right:5px;
 }
+
+.errormsgfixed {
+    position:fixed;
+    margin-top: calc(var(--header-height) * -1);
+}
+
+.errormsgoffpage {
+    margin-top: calc(var(--header-height) - 5px);
+}
+
+#errormsgcontainer {
+    width:100%%;
+    height:50px;
+}
+
+.errormsgactive {
+    background-color:#c00;
+}
+
+#errormsg {
+    margin-left:auto;
+    margin-right:auto;
+    text-align: center;
+    width:520px;
+    color:#fff;
+}
+
+.feederrormsg {
+    height:50px;
+    line-height: 45px;
+}
+
 </style>
 <div class="hidden" id="all_users" data-user-json="{{.UsersJSON}}"></div>
 <div class="hidden" id="current_user" data-user="{{.CurrentUserId}}"></div>
-<div class="feedheader">
+<div id="errormsgcontainer"><div class="feederrormsg" id="errormsg"></div></div>
+<div id="feedheader" class="feedheader">
     <h2>Transactions</h2>
     <button style="margin-bottom:20px;" type="button" onclick="onclickAddTransaction()">Add Transaction</button>
 </div>
@@ -45,15 +94,16 @@
         <div class="deletebtncontainer"><button onclick="onclickDeleteTransaction({{.Id}})" class="actionbtn">x</button></div>
         <div class="actionbtncontainer"><button id="transaction_{{.Id}}_action_btn" onclick="onclickEditTransaction({{.Id}})" class="actionbtn">e</button></div>
         {{end}}
-        <div class="userlabel">User: {{.DisplayName}}</div>
+        <div class="userlabel owninguserlabel">User: {{.DisplayName}}</div>
         <div id="transaction_{{.Id}}_fields_container">
             <div id="transaction_{{.Id}}_amount" data-amount="{{.Amount}}" class="amountlabel">Amount: ${{.Amount.FlintToString 2 2}}</div>
             <div id="transaction_{{.Id}}_comments" data-comments="{{.Comments}}" class="commentslabel">Comments: {{if .Comments}}{{.Comments}}{{else}}(none){{end}}</div>
         </div>
+        <hr/>
         <div class="transactionuserscontainer" id="transaction_{{.Id}}_users_container">
-            {{if ((eq .UserId $.CurrentUserId) and (.InvolvedUsers))}}
+            <!-- {{if ((eq .UserId $.CurrentUserId) and (.InvolvedUsers))}}
             <div class="actionbtncontainer"><button id="transaction_{{.Id}}_users_action_btn"onclick="onclickEditInvolvedUsers({{.Id}})" class="actionbtn">e</button></div>
-            {{end}}
+            {{end}} -->
             <div class="involveduserslabel">Involved Users</div>
             <!--
             TODO: Figure out how to implement this on both client and server side
@@ -82,6 +132,22 @@
 </div>
 <script type="text/javascript">
     window.addEventListener('load', loadAllUsers());
+    window.addEventListener('scroll', function() {
+        var errorBox   = getElement('errormsgcontainer');
+        var feedHeader = getElement('feedheader');
+        if (pageYOffset > 75) {
+            if (!hasClass(errorBox, 'errormsgfixed')) {
+                addClassToElem(errorBox  , 'errormsgfixed');
+                addClassToElem(feedHeader, 'errormsgoffpage');
+            }
+        } else {
+            if (hasClass(errorBox, 'errormsgfixed')) {
+                removeClassFromElem(errorBox  , 'errormsgfixed');
+                removeClassFromElem(feedHeader, 'errormsgoffpage');
+            }
+        }
+    });
+
     function loadAllUsers() {
         G.AllUsers      = parseJSON(getElement('all_users').getAttribute('data-user-json'), []);
         G.CurrentUserId = toInt(getElement('current_user').getAttribute('data-user'));
@@ -174,9 +240,10 @@
         var transactionFieldsContainer = document.createElement('DIV');
         var transactionAmount          = document.createElement('DIV');
         var transactionComments        = document.createElement('DIV');
+        var separator                  = document.createElement('HR');
         var transactionUsersContainer  = document.createElement('DIV');
-        var usersActionButtonContainer = document.createElement('DIV');
-        var usersActionButton          = document.createElement('BUTTON');
+        // var usersActionButtonContainer = document.createElement('DIV');
+        // var usersActionButton          = document.createElement('BUTTON');
         var involvedUsersLabel         = document.createElement('DIV');
         var involvedUsersList          = document.createElement('DIV');
         var addInvolvedUsersContainer  = document.createElement('DIV');
@@ -187,11 +254,12 @@
         addClassToElem(deleteButton              , 'actionbtn');
         addClassToElem(actionButton              , 'actionbtn');
         addClassToElem(userLabel                 , 'userlabel');
+        addClassToElem(userLabel                 , 'owninguserlabel');
         addClassToElem(transactionComments       , 'commentslabel');
         addClassToElem(transactionAmount         , 'amountlabel');
         addClassToElem(transactionUsersContainer , 'transactionuserscontainer');
-        addClassToElem(usersActionButtonContainer, 'actionbtncontainer');
-        addClassToElem(usersActionButton         , 'actionbtn');
+        // addClassToElem(usersActionButtonContainer, 'actionbtncontainer');
+        // addClassToElem(usersActionButton         , 'actionbtn');
         addClassToElem(involvedUsersLabel        , 'involveduserslabel');
 
         deleteButton.type      = 'button';
@@ -218,9 +286,9 @@
 
         transactionUsersContainer.id = 'transaction_' + transactionId.toString() + '_users_container';
 
-        usersActionButton.id        = 'transaction_' + transactionId.toString() + '_users_action_btn';
-        usersActionButton.innerHTML = 'e';
-        usersActionButton.setAttribute('onclick', 'onclickEditInvolvedUsers(' + transactionId.toString() + ')');
+        // usersActionButton.id        = 'transaction_' + transactionId.toString() + '_users_action_btn';
+        // usersActionButton.innerHTML = 'e';
+        // usersActionButton.setAttribute('onclick', 'onclickEditInvolvedUsers(' + transactionId.toString() + ')');
 
         involvedUsersList.id = 'transaction_' + transactionId.toString() + '_users_list';
 
@@ -249,6 +317,7 @@
             percentageLabel.setAttribute('data-percentage', user.PercentInvolvement);
             addClassToElem(percentageLabel, 'percentagelabel');
 
+            addClassToElem(userContainer, 'transactionuser');
             userContainer.appendChild(tUserLabel);
             userContainer.appendChild(percentageLabel);
             usersToPopulate.push(userContainer);
@@ -270,11 +339,11 @@
 
         deleteButtonContainer.appendChild(deleteButton);
         actionButtonContainer.appendChild(actionButton);
-        usersActionButtonContainer.appendChild(usersActionButton);
+        //usersActionButtonContainer.appendChild(usersActionButton);
 
-        if (usersToPopulate.length > 0) {
-            transactionUsersContainer.appendChild(usersActionButtonContainer);
-        }
+        // if (usersToPopulate.length > 0) {
+        //     transactionUsersContainer.appendChild(usersActionButtonContainer);
+        // }
         transactionUsersContainer.appendChild(involvedUsersLabel);
         transactionUsersContainer.appendChild(involvedUsersList);
         transactionUsersContainer.appendChild(addInvolvedUsersContainer);
@@ -283,6 +352,7 @@
         transactionContainer.appendChild(actionButtonContainer);
         transactionContainer.appendChild(userLabel);
         transactionContainer.appendChild(transactionFieldsContainer);
+        transactionContainer.appendChild(separator);
         transactionContainer.appendChild(transactionUsersContainer);
     }
 
@@ -474,6 +544,8 @@
 
         setInnerHTML(transactionActionButton, 's');
         transactionActionButton.setAttribute('onclick', 'onclickSaveTransaction(' + transactionId + ')');
+
+        onclickEditInvolvedUsers(transactionId);
     }
 
     function onclickEditInvolvedUsers(transactionId) {

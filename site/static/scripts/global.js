@@ -99,7 +99,6 @@ function replaceIds(parent, match, replace) {
 function replaceMatches(parent, q, qp, m, r) {
     if (!parent || !q) { return; }
     var elements = parent.querySelectorAll('*[' + q + qp + ']');
-    console.log(elements);
     for (var i = 0; i < elements.length; i++) {
         var element = elements[i];
         var eq = element.getAttribute(q);
@@ -303,10 +302,18 @@ function isBadRequest(status) {
 }
 
 function showError(text) {
-    if(text) {
+    if (text) {
+        var container = getElement('errormsgcontainer');
+        if (container) {
+            addClassToElem(container, 'errormsgactive');
+        }
         setInnerHtml('errormsg', text);
         show('errormsg');
     } else {
+        var container = getElement('errormsgcontainer');
+        if (container) {
+            removeClassFromElem(container, 'errormsgactive');
+        }
         setInnerHtml('errormsg', '');
         hide('errormsg');
     }

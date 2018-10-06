@@ -1,3 +1,7 @@
+:root {
+  --header-height:75px;
+}
+
 html,body{margin:0;padding:0;height:100%;width:100%;font-family: Trebuchet MS;}
 body{background-color:#f9f9f9;}
 input{box-sizing:border-box;}
@@ -24,6 +28,12 @@ i {
 i.downarrow {
     transform: rotate(45deg);
     -webkit-transform: rotate(45deg);
+}
+
+hr {
+    border:0px;
+    height:1px;
+    background:#000;
 }
 
 .flex-container {
@@ -62,9 +72,9 @@ i.downarrow {
 
 .topbar {
     width: 100%;
-    min-height:75px;
+    min-height: var(--header-height);
     background-color: #aaa;
-    flex: 0 1 75px;
+    flex: 0 1 var(--header-height);
     display: -webkit-box;
     display: -moz-box;
     display: -ms-flexbox;
@@ -74,7 +84,7 @@ i.downarrow {
 }
 
 .sitelogo {
-    flex: 0 1 250px;
+    flex: 0 1 350px;
     display: flex;
     justify-content: center;
     flex-direction: column;

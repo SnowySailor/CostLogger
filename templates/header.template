@@ -48,7 +48,7 @@
 
 </style>
 <div class="topbar">
-    <div class="sitelogo">Cost Logger</div>
+    <div class="sitelogo">Expense Trackin'</div>
     <div class="sitelinks"></div>
     <div class="userbox">
         {{if .IsUserLoggedIn}}
