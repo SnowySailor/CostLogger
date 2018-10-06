@@ -98,6 +98,10 @@ func (ctx *RequestContext) validateTransaction(transaction Transaction) error {
         return makeError("Amount must be greater than $0.00")
     }
 
+    if len(transaction.InvolvedUsers) == 0 {
+        return makeError("Transaction must have at least one involved user")
+    }
+
     var userIds []int
     var percentSum int
     for _, tUser := range transaction.InvolvedUsers {
@@ -105,14 +109,14 @@ func (ctx *RequestContext) validateTransaction(transaction Transaction) error {
             return makeError(fmt.Sprintf("User %v does not exist", tUser.UserId))
         }
         if intInList(tUser.UserId, userIds) {
-            return makeError("InvolvedUsers contains duplicate users")
+            return makeError("Involved users contains duplicate users")
         }
         userIds = append(userIds, tUser.UserId)
         percentSum = percentSum + int(tUser.PercentInvolvement)
     }
     // if percentSum != 100.00%
     if percentSum != 10000 {
-        return makeError("InvolvedUsers' PercentInvolvements must sum to 100.00%%")
+        return makeError("All percent involvements must sum to 100.00%%")
     }
     return nil
 }

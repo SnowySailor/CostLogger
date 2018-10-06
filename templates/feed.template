@@ -426,11 +426,11 @@
         addButton.innerHTML = '+';
 
         // Change the 'e' button to 's'
-        var actionButton = getElement('transaction_' + transactionId.toString() + '_users_action_btn');
-        if (actionButton) {
-            actionButton.innerHTML = 's';
-            actionButton.setAttribute('onclick', 'onclickSaveTransaction(' + transactionId.toString() + ')');
-        }
+        // var actionButton = getElement('transaction_' + transactionId.toString() + '_users_action_btn');
+        // if (actionButton) {
+        //     actionButton.innerHTML = 's';
+        //     actionButton.setAttribute('onclick', 'onclickSaveTransaction(' + transactionId.toString() + ')');
+        // }
 
         // If we've selected all users, hide the add button
         showAddUserButtonIfNeeded(transactionId);
@@ -577,9 +577,9 @@
             onchangeUserSelect(transactionId);
         }
 
-        var actionButton = getElement('transaction_' + transactionId.toString() + '_users_action_btn');
-        actionButton.innerHTML = 's';
-        actionButton.setAttribute('onclick', 'onclickSaveTransaction(' + transactionId + ')');
+        // var actionButton = getElement('transaction_' + transactionId.toString() + '_users_action_btn');
+        // actionButton.innerHTML = 's';
+        // actionButton.setAttribute('onclick', 'onclickSaveTransaction(' + transactionId + ')');
 
         var addButtonContainer = getElement('transaction_' + transactionId.toString() + '_add_btn_container');
         if (!addButtonContainer) { return; }
