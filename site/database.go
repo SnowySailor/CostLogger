@@ -131,8 +131,7 @@ func (ctx *RequestContext) insertOrUpdateTransaction(transaction Transaction) (i
     }
 
     if exists {
-        err           = ctx.updateTransaction(transaction)
-        transactionId = transaction.Id
+        transactionId, err = ctx.updateTransaction(transaction)
     } else {
         transactionId, err = ctx.insertTransaction(transaction)
     }
@@ -180,12 +179,37 @@ func (ctx *RequestContext) insertTransaction(transaction Transaction) (int, erro
     return transactionId, err
 }
 
-func (ctx RequestContext) updateTransaction(transaction Transaction) error {
+func (ctx RequestContext) updateTransaction(transaction Transaction) (int, error) {
     err := ctx.deleteTransaction(transaction.Id)
+    if err != nil {
+        return 0, err
+    }
+    newId, err := ctx.insertTransaction(transaction)
+    if err != nil {
+        return newId, err
+    }
+
+    err = ctx.markTransactionUpdated(transaction.Id, newId)
+
+    return newId, err
+}
+
+func (ctx RequestContext) markTransactionUpdated(oldId int, newId int) error {
+    sql := "update transaction set updated_from = $2 where id = $1"
+
+    res, err := ctx.database.Exec(sql, oldId, newId)
     if err != nil {
         return err
     }
-    ctx.insertTransaction(transaction)
+
+    count, err := res.RowsAffected()
+    if err != nil {
+        return err
+    }
+    if count == 0 {
+        return makeError("Transaction does not exist")
+    }
+
     return nil
 }
 
@@ -204,7 +228,7 @@ func (ctx RequestContext) deleteTransaction(transactionId int) error {
         return err
     }
     if count == 0 {
-        return makeError(fmt.Sprintf("Transaction does not exist"))
+        return makeError("Transaction does not exist")
     }
 
     return nil

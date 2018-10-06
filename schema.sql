@@ -14,27 +14,28 @@ CREATE DATABASE COST_LOGGER WITH OWNER = 'root' ENCODING = 'UTF8';
 
 
 -- Create tables
-CREATE TABLE APP_USER (
-    Id            SERIAL PRIMARY KEY,
-    Username      VARCHAR(100) NOT NULL,
-    Display_Name  VARCHAR(100) NOT NULL,
-    Email         VARCHAR(250) NOT NULL,
-    Password_Hash VARCHAR(100) NOT NULL
+CREATE TABLE app_user (
+    id            SERIAL       NOT NULL PRIMARY KEY,
+    username      VARCHAR(100) NOT NULL,
+    display_name  VARCHAR(100) NOT NULL,
+    email         VARCHAR(250) NOT NULL,
+    password_hash VARCHAR(100) NOT NULL
 );
 
-CREATE TABLE TRANSACTION (
-    Id               SERIAL       PRIMARY KEY,
-    Amount           INT          NOT NULL,
-    Comments         VARCHAR(500) NULL,
-    Create_Date      TIMESTAMP    NOT NULL DEFAULT(NOW() AT TIME ZONE 'UTC'),
-    User_Id          INT          NOT NULL REFERENCES APP_USER(Id),
-    Last_Update_Date TIMESTAMP    NOT NULL DEFAULT(NOW() AT TIME ZONE 'UTC'),
-    Is_Active        BOOLEAN      NOT NULL DEFAULT(TRUE)
+CREATE TABLE transaction (
+    id               SERIAL       NOT NULL PRIMARY KEY,
+    amount           INT          NOT NULL,
+    comments         VARCHAR(500)     NULL,
+    user_id          INT          NOT NULL REFERENCES app_user(id),
+    last_update_date TIMESTAMP    NOT NULL DEFAULT(NOW() AT TIME ZONE 'UTC'),
+    create_Date      TIMESTAMP    NOT NULL DEFAULT(NOW() AT TIME ZONE 'UTC'),
+    is_active        BOOLEAN      NOT NULL DEFAULT(TRUE),
+    updated_from     INT              NULL REFERENCES transaction(id)
 );
 
-CREATE TABLE TRANSACTION_USER (
-    Transaction_Id INT NOT NULL REFERENCES TRANSACTION(Id),
-    User_Id        INT NOT NULL REFERENCES APP_USER(Id),
-    Percentage     INT NOT NULL,
-    PRIMARY KEY (Transaction_Id, User_Id)
+CREATE TABLE transaction_user (
+    transaction_id INT NOT NULL REFERENCES transaction(id),
+    user_id        INT NOT NULL REFERENCES app_user(id),
+    percentage     INT NOT NULL,
+    PRIMARY KEY (transaction_id, user_id)
 );
