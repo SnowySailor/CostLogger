@@ -41,6 +41,7 @@ func (ctx RequestContext) ToPageTransactions(transactions []Transaction) ([]Page
             var pageUser PageTransactionUser
             pageUser.UserId             = user.UserId
             pageUser.PercentInvolvement = user.PercentInvolvement
+            pageUser.AmountInvolvement  = flint(float32(transaction.Amount) * (float32(user.PercentInvolvement)/10000.0))
             
             user, err := ctx.getUserBy("id", pageUser.UserId)
             if err != nil {

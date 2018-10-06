@@ -99,6 +99,7 @@ type PageTransaction struct {
 type PageTransactionUser struct {
     UserId             int
     PercentInvolvement flint
+    AmountInvolvement  flint
     Username           string
     DisplayName        string
 }
