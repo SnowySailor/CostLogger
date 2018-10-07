@@ -29,11 +29,6 @@
     font-weight: bold;
 }
 
-.transactionuserscontainer {
-    margin-top:10px;
-    padding:5px 0px;
-}
-
 .deletebtncontainer, .actionbtncontainer {
     display:inline-block;
     float:right;
@@ -79,6 +74,14 @@
     line-height: 45px;
 }
 
+select, input.percentageinput {
+    height: 20px;
+}
+
+.transactionuser input, .transactionuser button {
+    margin-left:5px;
+}
+
 </style>
 <div class="hidden" id="all_users" data-user-json="{{.UsersJSON}}"></div>
 <div class="hidden" id="current_user" data-user="{{.CurrentUserId}}"></div>
@@ -100,11 +103,11 @@
             <div id="transaction_{{.Id}}_comments" data-comments="{{.Comments}}" class="commentslabel">Comments: {{if .Comments}}{{.Comments}}{{else}}(none){{end}}</div>
         </div>
         <hr/>
+        <div class="involveduserslabel">Involved Users</div>
         <div class="transactionuserscontainer" id="transaction_{{.Id}}_users_container">
             <!-- {{if ((eq .UserId $.CurrentUserId) and (.InvolvedUsers))}}
             <div class="actionbtncontainer"><button id="transaction_{{.Id}}_users_action_btn"onclick="onclickEditInvolvedUsers({{.Id}})" class="actionbtn">e</button></div>
             {{end}} -->
-            <div class="involveduserslabel">Involved Users</div>
             <!--
             TODO: Figure out how to implement this on both client and server side
             {{if .InvolvedUsers}}
@@ -617,6 +620,7 @@
         var inputsContainer      = document.createElement('DIV');
         var amountInput          = document.createElement('INPUT');
         var commentsInput        = document.createElement('INPUT');
+        var separator            = document.createElement('HR');
         var involvedUsersLabel   = document.createElement('DIV');
         var transactionUsers     = document.createElement('DIV');
         var transactionUsersList = document.createElement('DIV');
@@ -628,6 +632,7 @@
 
         var myUser          = getUserById(G.CurrentUserId);
         userLabel.innerHTML = 'User: ' + myUser.DisplayName;
+        addClassToElem(userLabel, 'owninguserlabel');
 
         inputsContainer.id = 'transaction_' + transactionId.toString() + '_fields_container';
 
@@ -676,6 +681,7 @@
         transactionContainer.appendChild(saveButtonContainer);
         transactionContainer.appendChild(userLabel);
         transactionContainer.appendChild(inputsContainer);
+        transactionContainer.appendChild(separator);
         transactionContainer.appendChild(involvedUsersLabel);
         transactionContainer.appendChild(transactionUsers);
         transactionContainer.appendChild(addUsersButton);
