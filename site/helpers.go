@@ -37,11 +37,12 @@ func (ctx RequestContext) ToPageTransactions(transactions []Transaction) ([]Page
         pageTransaction.DisplayName = owningUser.DisplayName
         pageTransaction.Username    = owningUser.Username
 
-        for _, user := range transaction.InvolvedUsers {
+        for _, transactionUser := range transaction.InvolvedUsers {
             var pageUser PageTransactionUser
-            pageUser.UserId             = user.UserId
-            pageUser.PercentInvolvement = user.PercentInvolvement
-            pageUser.AmountInvolvement  = flint(float32(transaction.Amount) * (float32(user.PercentInvolvement)/10000.0))
+            pageUser.UserId             = transactionUser.UserId
+            pageUser.PercentInvolvement = transactionUser.PercentInvolvement
+            pageUser.IsPaid             = bool(transactionUser.IsPaid)
+            pageUser.AmountInvolvement  = flint(float32(transaction.Amount) * (float32(transactionUser.PercentInvolvement)/10000.0))
             
             user, err := ctx.getUserBy("id", pageUser.UserId)
             if err != nil {

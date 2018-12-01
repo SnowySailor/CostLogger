@@ -50,6 +50,8 @@ func routeRequest(resp http.ResponseWriter, req *http.Request, ctx RequestContex
             postLogout(ctx)
         } else if mainRoute == "register" {
             postRegisterUser(ctx)
+        } else if mainRoute == "pay" {
+            postPayTransaction(ctx)
         } else {
             ctx.notFoundPage("Invalid route")
         }

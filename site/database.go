@@ -213,6 +213,22 @@ func (ctx RequestContext) markTransactionUpdated(oldId int, newId int) error {
     return nil
 }
 
+func (ctx RequestContext) markTransactionPaid(transactionId int, userId int) (int64, error) {
+    sql := "update transaction_user set is_paid = true where transaction_id = $1 and user_id = $2"
+
+    res, err := ctx.database.Exec(sql, transactionId, userId)
+    if err != nil {
+        return 0, err
+    }
+
+    count, err := res.RowsAffected()
+    if err != nil {
+        return 0, err
+    }
+
+    return count, nil
+}
+
 func (ctx RequestContext) deleteTransaction(transactionId int) error {
     transactionQuery := "update transaction set is_active = FALSE where id = $1"
 
@@ -237,7 +253,7 @@ func (ctx RequestContext) deleteTransaction(transactionId int) error {
 // Get the users that are involved in a transaction
 func (ctx *RequestContext) getTransactionUsers(transactionId int) ([]TransactionUser, error) {
     users     := make([]TransactionUser, 0)
-    query     := "select user_id, percentage from transaction_user where transaction_id = $1"
+    query     := "select user_id, percentage, is_paid from transaction_user where transaction_id = $1"
     rows, err := ctx.database.Query(query, transactionId)
     if err != nil {
         return users, err
@@ -245,11 +261,13 @@ func (ctx *RequestContext) getTransactionUsers(transactionId int) ([]Transaction
     defer rows.Close()
     for rows.Next() {
         var transactionUser TransactionUser
+        var isPaid          bool
         transactionUser.TransactionId = transactionId
-        err = rows.Scan(&transactionUser.UserId, &transactionUser.PercentInvolvement)
+        err = rows.Scan(&transactionUser.UserId, &transactionUser.PercentInvolvement, &isPaid)
         if err != nil {
             return users, err
         }
+        transactionUser.IsPaid = ReadOnlyBool(isPaid)
         users = append(users, transactionUser)
     }
     err = rows.Err()
@@ -261,8 +279,8 @@ func (ctx *RequestContext) getTransactionUsers(transactionId int) ([]Transaction
 
 // Insert all the users that are involved in a transaction
 func (ctx *RequestContext) insertTransactionUser(user TransactionUser) error {
-    query   := "insert into transaction_user (user_id, transaction_id, percentage) values ($1, $2, $3)"
-    _, err := ctx.database.Exec(query, user.UserId, user.TransactionId, user.PercentInvolvement)
+    query   := "insert into transaction_user (user_id, transaction_id, percentage, is_paid) values ($1, $2, $3, $4)"
+    _, err := ctx.database.Exec(query, user.UserId, user.TransactionId, user.PercentInvolvement, false)
     return err
 }
 
@@ -316,6 +334,46 @@ func (ctx *RequestContext) getUserTransactions(userId int) ([]Transaction, error
         return transactions[i].CreateDate.After(transactions[j].CreateDate)
     })
     return transactions, nil
+}
+
+func (ctx RequestContext) getAmountOwedToOtherUsers(userId int) (map[string]flint, error) {
+    owed := make(map[string]flint)
+    owedToOthersQ := `
+        select
+            (select display_name from app_user where id = t.user_id),
+            round(sum(t.amount*(tu.percentage/10000.0)))
+        from app_user u
+        inner join transaction_user tu on u.id = tu.user_id
+        inner join transaction t on t.id = tu.transaction_id
+        where
+            t.is_active = true
+            and
+            tu.user_id = $1
+            and
+            tu.is_paid = false
+            and
+            t.user_id != $1
+        group by t.user_id`
+
+    rows, err := ctx.database.Query(owedToOthersQ, userId)
+    if err != nil {
+        return make(map[string]flint), err
+    }
+
+    defer rows.Close()
+    for rows.Next() {
+        var rowDisplayName string
+        var rowAmount int
+
+        err = rows.Scan(&rowDisplayName, &rowAmount)
+        if err != nil {
+            return make(map[string]flint), err
+        }
+
+        owed[rowDisplayName] = flint(rowAmount)
+    }
+
+    return owed, nil
 }
 
 // //////////////////////////////////////////////////////////////

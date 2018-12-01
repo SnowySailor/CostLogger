@@ -10,9 +10,13 @@ import (
 )
 
 // Type alias so methods can be defined on non-local types
-type Redis   redis.Client
-type Session sessions.Session
-type flint   int
+type Redis        redis.Client
+type Session      sessions.Session
+type flint        int
+type ReadOnlyBool bool
+
+// Special handling of json unmarshaling for ReadOnlyBool type
+func (ReadOnlyBool) UnmarshalJSON([]byte) error { return nil }
 
 // Request context
 type RequestContext struct {
@@ -82,6 +86,7 @@ type FeedData struct {
     Transactions  []PageTransaction
     UsersJSON     string
     CurrentUserId int
+    AmountsOwed   map[string]flint
 }
 
 type PageTransaction struct {
@@ -102,6 +107,7 @@ type PageTransactionUser struct {
     AmountInvolvement  flint
     Username           string
     DisplayName        string
+    IsPaid             bool
 }
 
 // Application data types
@@ -130,7 +136,8 @@ type Transaction struct {
 }
 
 type TransactionUser struct {
-    UserId             int   `json:"userid"`
-    TransactionId      int   `json:"transactionid"`
-    PercentInvolvement flint `json:"percentinvolvement"` // Example: 5049 = 50.49%
+    UserId             int           `json:"userid"`
+    TransactionId      int           `json:"transactionid"`
+    PercentInvolvement flint         `json:"percentinvolvement"` // Example: 5049 = 50.49%
+    IsPaid             ReadOnlyBool  `json:"ispaid"`
 }

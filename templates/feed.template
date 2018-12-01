@@ -1,4 +1,21 @@
 <style>
+.feedheader {
+    width:500px;
+    margin-left:auto;
+    margin-right:auto;
+    text-align:center;
+}
+
+.amountowedcontainer {
+    margin-left:auto;
+    margin-right:auto;
+    width:auto;
+}
+
+.amountowedtable {
+    margin: 0 auto;
+}
+
 .transactionlist {
     width:520px;
     margin-left:auto;
@@ -34,13 +51,16 @@
     float:right;
 }
 
-.actionbtn {
-    width:30px;
+.actionbtn, .actionbtnwide {
     height:30px;
     font-weight:bolder;
     border-radius:15px;
     border:none;
     margin-right:5px;
+}
+
+.actionbtn {
+    width:30px;
 }
 
 .errormsgfixed {
@@ -82,16 +102,51 @@ select, input.percentageinput {
     margin-left:5px;
 }
 
+.amountowedrow td {
+    border-bottom:1px solid black;
+}
+
+.amountowedtable th {
+    text-align: left;
+}
+
+.amountoweduserdiv, .amountowedamountdiv {
+    margin:5px 5px 5px 5px;
+}
+
+.amountowedtable {
+    border-collapse:collapse;
+}
+
+.userpaycontainer {
+    float:right;
+}
+
 </style>
 <div class="hidden" id="all_users" data-user-json="{{.UsersJSON}}"></div>
 <div class="hidden" id="current_user" data-user="{{.CurrentUserId}}"></div>
 <div id="errormsgcontainer"><div class="feederrormsg" id="errormsg"></div></div>
+<div class="amountowedcontainer centertext">
+    <h3>Amounts You Owe Each User</h3>
+    <table class="amountowedtable">
+        <tr>
+            <th>User</th>
+            <th>Amount</th>
+        </tr>
+    {{range $userId, $owed := .AmountsOwed}}
+        <tr class="amountowedrow">
+            <td class="amountoweduser lefttext"><div class="amountoweduserdiv">{{$userId}}</div></td>
+            <td class="amountowedamount centertext"><div class="amountowedamountdiv">${{$owed.FlintToString 2 2}}</div></td>
+        </tr>
+    {{end}}
+    </table>
+</div>
 <div id="feedheader" class="feedheader">
     <h2>Transactions</h2>
     <button style="margin-bottom:20px;" type="button" onclick="onclickAddTransaction()">Add Transaction</button>
 </div>
 <div id="transactionlist" class="transactionlist">
-    {{range .Transactions}}
+    {{range $transaction := .Transactions}}
     <div class="transactioncontainer" id="transaction_{{.Id}}_container">
         {{if eq .UserId $.CurrentUserId}}
         <div class="deletebtncontainer"><button onclick="onclickDeleteTransaction({{.Id}})" class="actionbtn">x</button></div>
@@ -105,21 +160,15 @@ select, input.percentageinput {
         <hr/>
         <div class="involveduserslabel">Involved Users</div>
         <div class="transactionuserscontainer" id="transaction_{{.Id}}_users_container">
-            <!-- {{if ((eq .UserId $.CurrentUserId) and (.InvolvedUsers))}}
-            <div class="actionbtncontainer"><button id="transaction_{{.Id}}_users_action_btn"onclick="onclickEditInvolvedUsers({{.Id}})" class="actionbtn">e</button></div>
-            {{end}} -->
-            <!--
-            TODO: Figure out how to implement this on both client and server side
-            {{if .InvolvedUsers}}
-            <div>
-                All users pay equal percentage?<input type="checkbox" onchange="onchangeAllUsersEqual({{.Id}}, event)"/>
-            </div>
-            {{end}}
-            -->
             <div id="transaction_{{.Id}}_users_list">
                 {{range .InvolvedUsers}}
                 <div class="transactionuser">
                     <div data-user="{{.UserId}}" class="userlabel">User: {{.DisplayName}}</div>
+                    {{if and (eq .UserId $.CurrentUserId) .IsPaid}}
+                    <div class="userpaycontainer"><div class="actionbtnwide">&#10003; Paid</div></div>
+                    {{else if eq .UserId $.CurrentUserId}}
+                    <div class="userpaycontainer"><button onclick="onclickPayTransaction({{$transaction.Id}})" class="actionbtnwide">Mark Paid</button></div>
+                    {{end}}
                     <div data-percentage="{{.PercentInvolvement}}" class="percentagelabel">Percentage: {{.PercentInvolvement.FlintToString 2 2}}%% (${{.AmountInvolvement.FlintToString 2 2}})</div>
                 </div>
                 {{end}}
@@ -689,7 +738,7 @@ select, input.percentageinput {
         prependChild(transactionList, transactionContainer);
     }
 
-    function onclickSaveTransaction(transactionId) {
+    function onclickSaveTransaction(transactionId, update) {
         var transaction = getTransactionFromDOM(transactionId);
         if (!transaction) {
             // TODO: Error messages
@@ -697,6 +746,12 @@ select, input.percentageinput {
         }
         httpPost('transaction/' + transactionId.toString(), JSON.stringify(transaction), function(resp) {
             transactionPostCallback(transactionId, transaction, resp);
+        });
+    }
+
+    function onclickPayTransaction(transactionId) {
+        httpPost('pay/' + transactionId.toString(), null, function(resp) {
+            transactionPayCallback(transactionId, resp);
         });
     }
 
@@ -735,6 +790,14 @@ select, input.percentageinput {
             transactionContainer.id = 'transaction_' + newId.toString() + '_container';
         } else {
             showError('Error 3. Transaction not saved.');
+        }
+    }
+
+    function transactionPaycallback(transactionId, response) {
+        if (response.Message) {
+            showError(response.Message);
+        } else {
+            alert('done');
         }
     }
 </script>

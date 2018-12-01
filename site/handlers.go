@@ -22,6 +22,7 @@ func getHome(ctx RequestContext) {
             println(err.Error())
             return
         }
+
         pageData  := makePageData("Feed", feed, []Link{}, []Link{})
         home, err := ctx.makeHtmlWithHeader("../templates/home.template", pageData)
         if err != nil {
@@ -69,6 +70,13 @@ func (ctx *RequestContext) getFeedHtml() (string, error) {
         return "", err
     }
 
+    // Get amount owed to each user
+    owed, err := ctx.getAmountOwedToOtherUsers(ctx.userId)
+    if err != nil {
+        println(err.Error())
+        return "", err
+    }
+
     // Convert users to json
     minimalJSON, err := marshalJSON(toMinimalUsers(users))
     if err != nil {
@@ -77,7 +85,7 @@ func (ctx *RequestContext) getFeedHtml() (string, error) {
     }
 
     // Construct feed data and feed it to templates
-    feedData := FeedData{Transactions:pageTransactions, UsersJSON:minimalJSON, CurrentUserId:ctx.userId}
+    feedData := FeedData{Transactions:pageTransactions, UsersJSON:minimalJSON, CurrentUserId:ctx.userId, AmountsOwed:owed}
     feed, err := makeHtml("../templates/feed.template", feedData)
     if err != nil {
         return "", err
@@ -88,7 +96,7 @@ func (ctx *RequestContext) getFeedHtml() (string, error) {
 func getRegisterUser(ctx RequestContext) {
     inputForm, err  := ctx.makeHtmlWithHeader("../templates/register.template", PageData{})
     if err != nil {
-        ctx.badRequestRaw("Internal error rendering page")
+        ctx.badRequestRaw("Error 3 - Internal error rendering page")
         return
     }
     pageData := makePageData("Register", inputForm, []Link{{Url:"/static/styles/global.css"}}, []Link{{Url:"/static/scripts/global.js"}})
@@ -99,7 +107,7 @@ func getLogin(ctx RequestContext) {
     if !ctx.isUserLoggedIn() {
         inputForm, err  := ctx.makeHtmlWithHeader("../templates/login.template", PageData{})
         if err != nil {
-            ctx.badRequestRaw("Internal error rendering page")
+            ctx.badRequestRaw("Error 4 - Internal error rendering page")
             return
         }
         pageData        := makePageData("Login", inputForm, []Link{{Url:"/static/styles/global.css"}}, []Link{{Url:"/static/scripts/global.js"}})
@@ -174,6 +182,43 @@ func postTransaction(ctx RequestContext) {
         return
     }
     response.Message = fmt.Sprintf("%v", id)
+    ctx.successJSON(response)
+}
+
+func postPayTransaction(ctx RequestContext) {
+    response := makeJSONResponse("")
+    if !ctx.isUserLoggedIn() {
+        response.Message = "Not authorized"
+        ctx.notAuthorizedJSON(response)
+        return
+    }
+
+    transactionIdStr, ok := getValueString(1, ctx.routes)
+    if !ok {
+        response.Message = "Invalid transaction id"
+        ctx.badRequestJSON(response)
+        return
+    }
+
+    transactionId, err := strconv.Atoi(transactionIdStr)
+    if err != nil {
+        response.Message = "Invalid transaction id"
+        ctx.badRequestJSON(response)
+        return
+    }
+
+    rows, err := ctx.markTransactionPaid(transactionId, ctx.userId)
+    if err != nil {
+        response.Message = "Error 5 - Database error"
+        ctx.badRequestJSON(response)
+        println(err.Error())
+        return
+    }
+    if rows == 0 {
+        response.Message = "Transaction does not exist or not authorized"
+        ctx.badRequestJSON(response)
+        return
+    }
     ctx.successJSON(response)
 }
 
