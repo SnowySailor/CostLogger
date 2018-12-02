@@ -177,9 +177,11 @@ select, input.percentageinput {
                         <button class="actionbtnwide paidbtn">&#10003; Paid</button>
                     </div>
                 {{else if eq .UserId $.CurrentUserId}}
+                    {{if not (eq $.CurrentUserId $transaction.UserId)}}
                     <div id="transaction_{{$transaction.Id}}_userpaycontainer" class="userpaycontainer">
                         <button onclick="onclickPayTransaction({{$transaction.Id}})" class="actionbtnwide">Mark Paid</button>
                     </div>
+                    {{end}}
                 {{end}}
                     <div data-percentage="{{.PercentInvolvement}}" class="percentagelabel">Percentage: {{.PercentInvolvement.FlintToString 2 2}}%% (${{.AmountInvolvement.FlintToString 2 2}})</div>
                 </div>
