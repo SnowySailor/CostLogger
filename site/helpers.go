@@ -218,7 +218,7 @@ func getLastPathRoute(path string) string {
     return lastRoute[:queryIndex]
 }
 
-func (ctx *RequestContext) getUserDisplayName() string {
+func (ctx RequestContext) getUserDisplayName() string {
     if !ctx.isUserLoggedIn() {
         return ""
     }
@@ -229,7 +229,7 @@ func (ctx *RequestContext) getUserDisplayName() string {
     return user.DisplayName
 }
 
-func (ctx *RequestContext) makeHtmlWithHeader(templateLocation string, data interface{}) (string, error) {
+func (ctx RequestContext) makeHtmlWithHeader(templateLocation string, data interface{}) (string, error) {
     var templateBytes bytes.Buffer
     t := template.Must(template.ParseFiles("../templates/header.template"))
 

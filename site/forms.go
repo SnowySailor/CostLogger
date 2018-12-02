@@ -1,6 +1,6 @@
 package main
 
-func (ctx *RequestContext) getFormValue(name string) (string, bool) {
+func (ctx RequestContext) getFormValue(name string) (string, bool) {
     if val, ok := ctx.getFormValueMulti(name); ok {
         if len(val) > 0 {
             return val[0], true
@@ -9,7 +9,7 @@ func (ctx *RequestContext) getFormValue(name string) (string, bool) {
     return "", false
 }
 
-func (ctx *RequestContext) getFormValueMulti(name string) ([]string, bool) {
+func (ctx RequestContext) getFormValueMulti(name string) ([]string, bool) {
     if val, ok := ctx.FormValueMulti(name); ok {
         return val, true
     }
@@ -19,7 +19,7 @@ func (ctx *RequestContext) getFormValueMulti(name string) ([]string, bool) {
     return make([]string, 0), false
 }
 
-func (ctx *RequestContext) FormValueMulti(key string) ([]string, bool) {
+func (ctx RequestContext) FormValueMulti(key string) ([]string, bool) {
     r := ctx.request
     if r.Form == nil {
         r.ParseMultipartForm(config.WebConfig.MaxUploadSize)
@@ -30,7 +30,7 @@ func (ctx *RequestContext) FormValueMulti(key string) ([]string, bool) {
     return make([]string, 0), false
 }
 
-func (ctx *RequestContext) PostFormValueMulti(key string) ([]string, bool) {
+func (ctx RequestContext) PostFormValueMulti(key string) ([]string, bool) {
     r := ctx.request
     if r.PostForm == nil {
         r.ParseMultipartForm(config.WebConfig.MaxUploadSize)

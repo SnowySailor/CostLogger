@@ -122,6 +122,10 @@ select, input.percentageinput {
     float:right;
 }
 
+.paidbtn {
+    background-color: #aaffaa;
+}
+
 </style>
 <div class="hidden" id="all_users" data-user-json="{{.UsersJSON}}"></div>
 <div class="hidden" id="current_user" data-user="{{.CurrentUserId}}"></div>
@@ -148,10 +152,10 @@ select, input.percentageinput {
 <div id="transactionlist" class="transactionlist">
     {{range $transaction := .Transactions}}
     <div class="transactioncontainer" id="transaction_{{.Id}}_container">
-        {{if eq .UserId $.CurrentUserId}}
+    {{if eq .UserId $.CurrentUserId}}
         <div class="deletebtncontainer"><button onclick="onclickDeleteTransaction({{.Id}})" class="actionbtn">x</button></div>
         <div class="actionbtncontainer"><button id="transaction_{{.Id}}_action_btn" onclick="onclickEditTransaction({{.Id}})" class="actionbtn">e</button></div>
-        {{end}}
+    {{end}}
         <div class="userlabel owninguserlabel">User: {{.DisplayName}}</div>
         <div id="transaction_{{.Id}}_fields_container">
             <div id="transaction_{{.Id}}_amount" data-amount="{{.Amount}}" class="amountlabel">Amount: ${{.Amount.FlintToString 2 2}}</div>
@@ -161,22 +165,26 @@ select, input.percentageinput {
         <div class="involveduserslabel">Involved Users</div>
         <div class="transactionuserscontainer" id="transaction_{{.Id}}_users_container">
             <div id="transaction_{{.Id}}_users_list">
-                {{range .InvolvedUsers}}
+            {{range .InvolvedUsers}}
                 <div class="transactionuser">
                     <div data-user="{{.UserId}}" class="userlabel">User: {{.DisplayName}}</div>
-                    {{if and (eq .UserId $.CurrentUserId) .IsPaid}}
-                    <div class="userpaycontainer"><div class="actionbtnwide">&#10003; Paid</div></div>
-                    {{else if eq .UserId $.CurrentUserId}}
-                    <div class="userpaycontainer"><button onclick="onclickPayTransaction({{$transaction.Id}})" class="actionbtnwide">Mark Paid</button></div>
-                    {{end}}
+                {{if and (eq .UserId $.CurrentUserId) .IsPaid}}
+                    <div id="transaction_{{$transaction.Id}}_userpaycontainer" class="userpaycontainer">
+                        <button class="actionbtnwide paidbtn">&#10003; Paid</button>
+                    </div>
+                {{else if eq .UserId $.CurrentUserId}}
+                    <div id="transaction_{{$transaction.Id}}_userpaycontainer" class="userpaycontainer">
+                        <button onclick="onclickPayTransaction({{$transaction.Id}})" class="actionbtnwide">Mark Paid</button>
+                    </div>
+                {{end}}
                     <div data-percentage="{{.PercentInvolvement}}" class="percentagelabel">Percentage: {{.PercentInvolvement.FlintToString 2 2}}%% (${{.AmountInvolvement.FlintToString 2 2}})</div>
                 </div>
-                {{end}}
+            {{end}}
             </div>
             <div id="transaction_{{.Id}}_add_btn_container">
-                {{if (not .InvolvedUsers) and (eq .UserId $.CurrentUserId)}}
+            {{if (not .InvolvedUsers) and (eq .UserId $.CurrentUserId)}}
                 <button type="button" id="transaction_{{.Id}}_add_btn" onclick="onclickAddUser({{.Id}})">Add Involved Users</button>
-                {{end}}
+            {{end}}
             </div>
         </div>
     </div>
@@ -793,11 +801,19 @@ select, input.percentageinput {
         }
     }
 
-    function transactionPaycallback(transactionId, response) {
+    function transactionPayCallback(transactionId, response) {
         if (response.Message) {
             showError(response.Message);
         } else {
-            alert('done');
+            var container = getElement('transaction_' + transactionId.toString() + '_userpaycontainer');
+            var newButton = document.createElement('button');
+
+            addClassToElem(newButton, 'actionbtnwide');
+            addClassToElem(newButton, 'paidbtn');
+            setInnerHTML(newButton, '&#10003; Paid');
+            
+            removeAllChildren(container);
+            container.appendChild(newButton);
         }
     }
 </script>

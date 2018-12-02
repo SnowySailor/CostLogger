@@ -25,7 +25,7 @@ func getDatabaseConnection() (*sql.DB, error) {
 // USER QUERIES
 // //////////////////////////////////////////////////////////////
 
-func (ctx *RequestContext) doesUserExist(id int) bool {
+func (ctx RequestContext) doesUserExist(id int) bool {
     var uId int
     query := "select id from app_user where id = $1"
     row   := ctx.database.QueryRow(query, id)
@@ -34,12 +34,12 @@ func (ctx *RequestContext) doesUserExist(id int) bool {
 }
 
 // Get a single user by their id
-func (ctx *RequestContext) getUser(id int) (User, error) {
+func (ctx RequestContext) getUser(id int) (User, error) {
     return ctx.getUserBy("id", id)
 }
 
 // Get a single user by a provided field as long as the field is supported
-func (ctx *RequestContext) getUserBy(field string, value interface{}) (User, error) {
+func (ctx RequestContext) getUserBy(field string, value interface{}) (User, error) {
     var user User
     allowedFields := []string{"id", "username", "display_name", "email"}
     if !strInList(strToLower(field), allowedFields) {
@@ -81,7 +81,7 @@ func (ctx RequestContext) getAllUsers() ([]User, error) {
 }
 
 // Insert a new user into the database
-func (ctx *RequestContext) insertUser(user User) (int, error) {
+func (ctx RequestContext) insertUser(user User) (int, error) {
     var userId int
     // Query
     query := "insert into app_user (username, display_name, email, password_hash) values ($1, $2, $3, $4) returning id"
@@ -98,7 +98,7 @@ func (ctx *RequestContext) insertUser(user User) (int, error) {
 // //////////////////////////////////////////////////////////////
 
 // Get a single transaction
-func (ctx *RequestContext) getTransaction(transactionId int) (Transaction, error) {
+func (ctx RequestContext) getTransaction(transactionId int) (Transaction, error) {
     var transaction Transaction
     // Query
     query := "select id, amount, comments, create_date, user_id, last_update_date from transaction where id = $1 and is_active = TRUE"
@@ -115,7 +115,7 @@ func (ctx *RequestContext) getTransaction(transactionId int) (Transaction, error
     return transaction, err
 }
 
-func (ctx *RequestContext) insertOrUpdateTransaction(transaction Transaction) (int, error) {
+func (ctx RequestContext) insertOrUpdateTransaction(transaction Transaction) (int, error) {
     var transactionId int
 
     exists := true
@@ -139,7 +139,7 @@ func (ctx *RequestContext) insertOrUpdateTransaction(transaction Transaction) (i
 }
 
 // Insert a new transaction into the database
-func (ctx *RequestContext) insertTransaction(transaction Transaction) (int, error) {
+func (ctx RequestContext) insertTransaction(transaction Transaction) (int, error) {
     var transactionId int
 
     // Begin database transaction
@@ -251,7 +251,7 @@ func (ctx RequestContext) deleteTransaction(transactionId int) error {
 }
 
 // Get the users that are involved in a transaction
-func (ctx *RequestContext) getTransactionUsers(transactionId int) ([]TransactionUser, error) {
+func (ctx RequestContext) getTransactionUsers(transactionId int) ([]TransactionUser, error) {
     users     := make([]TransactionUser, 0)
     query     := "select user_id, percentage, is_paid from transaction_user where transaction_id = $1"
     rows, err := ctx.database.Query(query, transactionId)
@@ -278,14 +278,14 @@ func (ctx *RequestContext) getTransactionUsers(transactionId int) ([]Transaction
 }
 
 // Insert all the users that are involved in a transaction
-func (ctx *RequestContext) insertTransactionUser(user TransactionUser) error {
+func (ctx RequestContext) insertTransactionUser(user TransactionUser) error {
     query   := "insert into transaction_user (user_id, transaction_id, percentage, is_paid) values ($1, $2, $3, $4)"
     _, err := ctx.database.Exec(query, user.UserId, user.TransactionId, user.PercentInvolvement, false)
     return err
 }
 
 // Get all transactions that a user is involved in
-func (ctx *RequestContext) getUserTransactions(userId int) ([]Transaction, error) {
+func (ctx RequestContext) getUserTransactions(userId int) ([]Transaction, error) {
     var transactions []Transaction
     var commentsNull sql.NullString
 
@@ -363,7 +363,7 @@ func (ctx RequestContext) getAmountOwedToOtherUsers(userId int) (map[string]flin
     defer rows.Close()
     for rows.Next() {
         var rowDisplayName string
-        var rowAmount int
+        var rowAmount      int
 
         err = rows.Scan(&rowDisplayName, &rowAmount)
         if err != nil {

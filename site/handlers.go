@@ -48,7 +48,7 @@ func getTransaction(ctx RequestContext) {
     ctx.successRaw("Get transaction")
 }
 
-func (ctx *RequestContext) getFeedHtml() (string, error) {
+func (ctx RequestContext) getFeedHtml() (string, error) {
     // Get all transactions
     transactions, err := ctx.getUserTransactions(ctx.userId)
     if err != nil {
