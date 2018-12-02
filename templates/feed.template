@@ -130,8 +130,9 @@ select, input.percentageinput {
 <div class="hidden" id="all_users" data-user-json="{{.UsersJSON}}"></div>
 <div class="hidden" id="current_user" data-user="{{.CurrentUserId}}"></div>
 <div id="errormsgcontainer"><div class="feederrormsg" id="errormsg"></div></div>
-<div class="amountowedcontainer centertext">
+<div id="amountowedcontainer" class="amountowedcontainer centertext">
     <h3>Amounts You Owe Each User</h3>
+{{if .AmountsOwed}}
     <table class="amountowedtable">
         <tr>
             <th>User</th>
@@ -144,6 +145,9 @@ select, input.percentageinput {
         </tr>
     {{end}}
     </table>
+{{else}}
+    (none)
+{{end}}
 </div>
 <div id="feedheader" class="feedheader">
     <h2>Transactions</h2>
@@ -168,7 +172,7 @@ select, input.percentageinput {
             {{range .InvolvedUsers}}
                 <div class="transactionuser">
                     <div data-user="{{.UserId}}" class="userlabel">User: {{.DisplayName}}</div>
-                {{if and (eq .UserId $.CurrentUserId) .IsPaid}}
+                {{if and (or (eq .UserId $.CurrentUserId) (eq $transaction.UserId $.CurrentUserId)) .IsPaid}}
                     <div id="transaction_{{$transaction.Id}}_userpaycontainer" class="userpaycontainer">
                         <button class="actionbtnwide paidbtn">&#10003; Paid</button>
                     </div>
@@ -193,17 +197,17 @@ select, input.percentageinput {
 <script type="text/javascript">
     window.addEventListener('load', loadAllUsers());
     window.addEventListener('scroll', function() {
-        var errorBox   = getElement('errormsgcontainer');
-        var feedHeader = getElement('feedheader');
+        var errorBox      = getElement('errormsgcontainer');
+        var offsetElement = getElement('amountowedcontainer');
         if (pageYOffset > 75) {
             if (!hasClass(errorBox, 'errormsgfixed')) {
                 addClassToElem(errorBox  , 'errormsgfixed');
-                addClassToElem(feedHeader, 'errormsgoffpage');
+                addClassToElem(offsetElement, 'errormsgoffpage');
             }
         } else {
             if (hasClass(errorBox, 'errormsgfixed')) {
                 removeClassFromElem(errorBox  , 'errormsgfixed');
-                removeClassFromElem(feedHeader, 'errormsgoffpage');
+                removeClassFromElem(offsetElement, 'errormsgoffpage');
             }
         }
     });
