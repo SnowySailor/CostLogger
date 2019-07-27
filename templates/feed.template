@@ -131,8 +131,8 @@ select, input.percentageinput {
 <div class="hidden" id="current_user" data-user="{{.CurrentUserId}}"></div>
 <div id="errormsgcontainer"><div class="feederrormsg" id="errormsg"></div></div>
 <div id="amountowedcontainer" class="amountowedcontainer centertext">
-    <h3>Amounts You Owe Each User</h3>
 {{if .AmountsOwed}}
+    <h3>Amounts You Owe Each User</h3>
     <table class="amountowedtable">
         <tr>
             <th>User</th>
@@ -145,8 +145,23 @@ select, input.percentageinput {
         </tr>
     {{end}}
     </table>
-{{else}}
-    (none)
+{{end}}
+</div>
+<div id="amountowedcontainer" class="amountowedcontainer centertext">
+{{if .AmountsOwedToThisUser}}
+    <h3>Amounts Each User Owes You</h3>
+    <table class="amountowedtable">
+        <tr>
+            <th>User</th>
+            <th>Amount</th>
+        </tr>
+    {{range $userId, $owed := .AmountsOwedToThisUser}}
+        <tr class="amountowedrow">
+            <td class="amountoweduser lefttext"><div class="amountoweduserdiv">{{$userId}}</div></td>
+            <td class="amountowedamount centertext"><div class="amountowedamountdiv">${{$owed.FlintToString 2 2}}</div></td>
+        </tr>
+    {{end}}
+    </table>
 {{end}}
 </div>
 <div id="feedheader" class="feedheader">

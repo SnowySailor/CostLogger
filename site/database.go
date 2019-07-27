@@ -280,7 +280,7 @@ func (ctx RequestContext) getTransactionUsers(transactionId int) ([]TransactionU
 // Insert all the users that are involved in a transaction
 func (ctx RequestContext) insertTransactionUser(user TransactionUser) error {
     query   := "insert into transaction_user (user_id, transaction_id, percentage, is_paid) values ($1, $2, $3, $4)"
-    _, err := ctx.database.Exec(query, user.UserId, user.TransactionId, user.PercentInvolvement, false)
+    _, err := ctx.database.Exec(query, user.UserId, user.TransactionId, user.PercentInvolvement, user.IsPaid)
     return err
 }
 
@@ -356,6 +356,46 @@ func (ctx RequestContext) getAmountOwedToOtherUsers(userId int) (map[string]flin
         group by t.user_id`
 
     rows, err := ctx.database.Query(owedToOthersQ, userId)
+    if err != nil {
+        return make(map[string]flint), err
+    }
+
+    defer rows.Close()
+    for rows.Next() {
+        var rowDisplayName string
+        var rowAmount      int
+
+        err = rows.Scan(&rowDisplayName, &rowAmount)
+        if err != nil {
+            return make(map[string]flint), err
+        }
+
+        owed[rowDisplayName] = flint(rowAmount)
+    }
+
+    return owed, nil
+}
+
+func (ctx RequestContext) getAmountOwedToThisUser(userId int) (map[string]flint, error) {
+    owed := make(map[string]flint)
+    owedToMeQ := `
+        select
+            (select display_name from app_user where id = tu.user_id),
+            round(sum(t.amount*(tu.percentage/10000.0)))
+        from app_user u
+        inner join transaction_user tu on u.id = tu.user_id
+        inner join transaction t on t.id = tu.transaction_id
+        where
+            t.is_active = true
+            and
+            t.user_id = $1
+            and
+            tu.is_paid = false
+            and
+            tu.user_id != $1
+        group by tu.user_id`
+
+    rows, err := ctx.database.Query(owedToMeQ, userId)
     if err != nil {
         return make(map[string]flint), err
     }

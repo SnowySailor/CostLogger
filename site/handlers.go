@@ -77,6 +77,13 @@ func (ctx RequestContext) getFeedHtml() (string, error) {
         return "", err
     }
 
+    // Get amount each user owes thsi user
+    owedToThisUser, err := ctx.getAmountOwedToThisUser(ctx.userId)
+    if err != nil {
+        println(err.Error())
+        return "", err
+    }
+
     // Convert users to json
     minimalJSON, err := marshalJSON(toMinimalUsers(users))
     if err != nil {
@@ -85,7 +92,7 @@ func (ctx RequestContext) getFeedHtml() (string, error) {
     }
 
     // Construct feed data and feed it to templates
-    feedData := FeedData{Transactions:pageTransactions, UsersJSON:minimalJSON, CurrentUserId:ctx.userId, AmountsOwed:owed}
+    feedData := FeedData{Transactions:pageTransactions, UsersJSON:minimalJSON, CurrentUserId:ctx.userId, AmountsOwed:owed, AmountsOwedToThisUser:owedToThisUser}
     feed, err := makeHtml("../templates/feed.template", feedData)
     if err != nil {
         return "", err

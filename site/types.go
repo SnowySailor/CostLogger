@@ -87,6 +87,7 @@ type FeedData struct {
     UsersJSON     string
     CurrentUserId int
     AmountsOwed   map[string]flint
+    AmountsOwedToThisUser map[string]flint
 }
 
 type PageTransaction struct {
